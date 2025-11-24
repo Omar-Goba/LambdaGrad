@@ -53,10 +53,6 @@ def make_early_stopping_callback(
 
         ### trigger stop if patience exhausted ###
         if epochs_without_improve >= patience:
-            print(
-                f"Early stopping: no improvement in val_loss for {patience} epochs. "
-                f"Best val_loss={best_val_loss:.4f}"
-            )
             state.stop_training = True
 
     return callback
@@ -103,10 +99,6 @@ def make_lr_annealing_callback(
             new_lr = max(old_lr * factor, min_lr)
 
             if new_lr < old_lr:
-                print(
-                    f"LR annealing: val_loss plateaued for {patience} epochs. "
-                    f"LR {old_lr:.5f} -> {new_lr:.5f}"
-                )
                 model.learning_rate = new_lr
 
             epochs_without_improve = 0  # reset patience after LR change

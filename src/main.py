@@ -10,6 +10,7 @@ from util import (
     LEARNING_RATE,
     ActivationFunction,
     LossFunction,
+    AccuracyMetric,
 )
 from explore import feature_engineering
 from process import impute_data, split, batch_data
@@ -67,11 +68,12 @@ def main() -> int:
         ],
         learning_rate=LEARNING_RATE,
         loss_function=LossFunction.BCE,
+        accuracy_function=AccuracyMetric.BINARY_ACCURACY,
     )
 
     ### set up callbacks ###
     early_stopping_callback = make_early_stopping_callback(
-        patience=10,
+        patience=20,
         min_delta=1e-4,
     )
     lr_annealing_callback = make_lr_annealing_callback(
@@ -91,11 +93,19 @@ def main() -> int:
     )
 
     ### plot the loss curves ###
+    plt.subplot(1, 2, 1)
     plt.plot(history["train_loss"], label="Train Loss")
     plt.plot(history["val_loss"], label="Validation Loss")
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
     plt.title("Training and Validation Loss over Epochs")
+    plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.plot(history["train_accuracy"], label="Train Accuracy")
+    plt.plot(history["val_accuracy"], label="Validation Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.title("Training and Validation Accuracy over Epochs")
     plt.legend()
     plt.show()
 

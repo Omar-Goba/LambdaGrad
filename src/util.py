@@ -23,6 +23,10 @@ class LossFunction(str, Enum):
     MSE = "mean_squared_error"
 
 
+class AccuracyMetric(str, Enum):
+    BINARY_ACCURACY = "binary_accuracy"
+
+
 ### ~~~ STATE MANAGEMENT ~~~ ###
 TARGET_COLUMN: str = "target"
 RANDOM_SEED: int = 42
@@ -54,6 +58,11 @@ def load_data() -> pd.DataFrame:
     df["target"] = data.target
 
     return df
+
+
+####################################
+### ~~~ ACTIVATION FUNCTIONS ~~~ ###
+####################################
 
 
 def relu(x: tensor_t) -> tensor_t:
@@ -166,6 +175,11 @@ ACTIVATION_DERIVATIVES: dict[ActivationFunction, Callable[[tensor_t], tensor_t]]
 }
 
 
+##############################
+### ~~~ LOSS FUNCTIONS ~~~ ###
+##############################
+
+
 def binary_cross_entropy(y_true: tensor_t, y_pred: tensor_t) -> float:
     """
     Compute the Binary Cross-Entropy loss.
@@ -257,4 +271,28 @@ LOSS_FUNCTIONS: dict[LossFunction, Callable[[tensor_t, tensor_t], float]] = {
 LOSS_DERIVATIVES: dict[LossFunction, Callable[[tensor_t, tensor_t], tensor_t]] = {
     LossFunction.BCE: bce_with_sigmoid_last_layer_grad,
     LossFunction.MSE: mean_squared_error_derivative,
+}
+
+
+################################
+### ~~~ ACCURACY METRICS ~~~ ###
+################################
+
+
+def binary_accuracy(y_true: tensor_t, y_pred: tensor_t) -> float:
+    """
+    Compute the accuracy for binary classification.
+    Args:
+        y_true (tensor_t): True labels.
+        y_pred (tensor_t): Predicted labels.
+    Returns:
+        float: Accuracy score.
+    """
+    y_pred_labels = (y_pred >= 0.5).astype(int)
+    accuracy = np.mean(y_true == y_pred_labels).astype(float)
+    return accuracy
+
+
+ACCURACY_METRICS: dict[AccuracyMetric, Callable[[tensor_t, tensor_t], float]] = {
+    AccuracyMetric.BINARY_ACCURACY: binary_accuracy,
 }

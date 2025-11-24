@@ -5,12 +5,14 @@ import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
 from util import (
+    tensor_t,
     LossFunction,
     LOSS_FUNCTIONS,
     LOSS_DERIVATIVES,
     ActivationFunction,
     ACTIVATION_DERIVATIVES,
-    tensor_t,
+    AccuracyMetric,
+    ACCURACY_METRICS,
 )
 from layer import (
     Layer,
@@ -29,11 +31,13 @@ class Model:
     layers: list[Layer]
     loss_function: LossFunction
     learning_rate: float
+    accuracy_function: AccuracyMetric = AccuracyMetric.BINARY_ACCURACY
 
 
 def create_model(
     layers: list[Layer],
     loss_function: LossFunction,
+    accuracy_function: AccuracyMetric = AccuracyMetric.BINARY_ACCURACY,
     learning_rate: float = 0.001,
 ) -> Model:
     """
@@ -100,6 +104,22 @@ def compute_loss(model: Model, y_true: tensor_t, y_pred: tensor_t) -> float:
     loss: float = loss_function(y_true, y_pred)
 
     return loss
+
+
+def comptute_accuracy(model: Model, y_true: tensor_t, y_pred: tensor_t) -> float:
+    """
+    Compute the accuracy of the model.
+    Args:
+        model (Model): The neural network model.
+        y_true (tensor_t): The true labels.
+        y_pred (tensor_t): The predicted labels.
+    Returns:
+        float: The computed accuracy.
+    """
+    accuracy_function = ACCURACY_METRICS[model.accuracy_function]
+    accuracy: float = accuracy_function(y_true, y_pred)
+
+    return accuracy
 
 
 def apply_gradients(model: Model, grads_list: list[Gradients]) -> None:
@@ -237,6 +257,8 @@ def train_model(
     history = {
         "train_loss": [],
         "val_loss": [],
+        "train_accuracy": [],
+        "val_accuracy": [],
     }
     ### unpack data ###
     tr_X, tr_y = train_data
@@ -245,13 +267,15 @@ def train_model(
     ### training loop ###
     for _ in trange(epochs, desc="Training Epochs"):
         current_loss = 0.0
+        current_accuracy = 0.0
         for X_batch, y_batch in zip(tr_X, tr_y):
             """
             1. do a forward pass
             2. compute the loss
-            3. compute the gradients
-            4. apply the gradients
-            5. track the loss
+            3. compute the accuracy
+            4. compute the gradients
+            5. apply the gradients
+            6. track the history
             """
             ### call the model ###
             y_pred = call_model(model, X_batch)
@@ -259,23 +283,31 @@ def train_model(
             ### compute loss ###
             loss = compute_loss(model, y_batch, y_pred)
 
+            ### compute accuracy ###
+            accuracy = comptute_accuracy(model, y_batch, y_pred)
+
             ### compute gradients ###
             grads = compute_gradients(model, X_batch, y_batch)
 
             ### apply gradients ###
             apply_gradients(model, grads)
 
-            ### track loss ###
+            ### track history ###
             current_loss += loss
+            current_accuracy += accuracy
 
-        ### average loss over all batches ###
+        ### average history over all batches ###
         average_loss = current_loss / len(tr_X)
         history["train_loss"].append(average_loss)
+        average_accuracy = current_accuracy / len(tr_X)
+        history["train_accuracy"].append(average_accuracy)
 
         ### validation loss ###
         y_val_pred = call_model(model, val_X)
         val_loss = compute_loss(model, val_y, y_val_pred)
         history["val_loss"].append(val_loss)
+        val_accuracy = comptute_accuracy(model, val_y, y_val_pred)
+        history["val_accuracy"].append(val_accuracy)
 
         ### Construct state for callbacks ###
         state = State(
