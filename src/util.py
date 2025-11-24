@@ -10,7 +10,8 @@ from typing import Callable, TypeAlias, Any
 
 tensor_t: TypeAlias = np.ndarray
 dim_t: TypeAlias = tuple[int, ...]
-callback: TypeAlias = Callable[["State"], None]
+callback_t: TypeAlias = Callable[["State"], None]
+optimiser_t: TypeAlias = Callable[["Model", list["Gradients"]], None]
 
 
 class ActivationFunction(str, Enum):

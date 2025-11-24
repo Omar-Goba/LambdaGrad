@@ -16,6 +16,7 @@ from util import (
 from explore import feature_engineering
 from process import impute_data, split, batch_data
 from callbacks import make_early_stopping_callback, make_lr_annealing_callback
+from optimiser import make_minibatch_sgd_optimizer
 from model import (
     Model,
     call_model,
@@ -70,6 +71,9 @@ def main() -> int:
     ### batch the data ###
     tr_X_batches, tr_y_batches = batch_data(tr_X, tr_y, BATCH_SIZE)
 
+    ### init optimiser ###
+    optimiser = make_minibatch_sgd_optimizer(batch_size=BATCH_SIZE)
+
     ### init model ###
     model = Model(
         layers=[
@@ -115,6 +119,7 @@ def main() -> int:
         (tr_X_batches, tr_y_batches),
         (vl_X, vl_y),
         epochs=EPOCHS,
+        optimiser=optimiser,
         callbacks=[early_stopping_callback, lr_annealing_callback],
     )
 

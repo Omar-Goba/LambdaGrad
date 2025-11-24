@@ -5,6 +5,7 @@ import numpy as np
 ### ~~~ Local IMPORTS ~~~ ###
 from util import (
     tensor_t,
+    optimiser_t,
     LossFunction,
     LOSS_FUNCTIONS,
     LOSS_DERIVATIVES,
@@ -23,10 +24,7 @@ from layer import (
     apple_gradients_to_layer,
     layer_to_str,
 )
-from callbacks import Callback, State
-
-
-### ~~~ TYPE DEFINITIONS ~~~ ###
+from callbacks import callback_t, State
 
 
 def create_model(
@@ -125,6 +123,7 @@ def apply_gradients(model: Model, grads_list: list[Gradients]) -> None:
         model (Model): The neural network model.
         grads_list (list[Gradients]): List of gradients for each layer.
     """
+    raise DeprecationWarning("Use 'apple_gradients_to_layer' instead.")
     if len(grads_list) != len(model.layers):
         raise ValueError(
             f"Number of gradients {len(grads_list)} does not match number of "
@@ -246,7 +245,8 @@ def train_model(
     train_data: tuple[tensor_t, tensor_t],
     val_data: tuple[tensor_t, tensor_t],
     epochs: int,
-    callbacks: list[Callback] = [],
+    optimiser: optimiser_t,
+    callbacks: list[callback_t] = [],
 ) -> History:
     """"""
     ### init history ###
@@ -287,7 +287,7 @@ def train_model(
             grads = compute_gradients(model, X_batch, y_batch)
 
             ### apply gradients ###
-            apply_gradients(model, grads)
+            optimiser(model, grads)
 
             ### track history ###
             current_loss += loss
@@ -316,8 +316,8 @@ def train_model(
         )
 
         ### call callbacks ###
-        for callback in callbacks:
-            callback(state)
+        for cb in callbacks:
+            cb(state)
 
         ### check for early stopping ###
         if state.stop_training:

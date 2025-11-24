@@ -2,7 +2,7 @@
 # None
 
 ### ~~~ LOCAL IMPORTS ~~~ ###
-from util import State, callback, Model
+from util import State, callback_t, Model
 
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
@@ -15,7 +15,7 @@ from util import State, callback, Model
 def make_early_stopping_callback(
     patience: int = 5,
     min_delta: float = 0.0,
-) -> callback:
+) -> callback_t:
     """
     Create an early stopping callback based on validation loss.
     Args:
@@ -52,7 +52,7 @@ def make_lr_annealing_callback(
     patience: int = 5,
     min_delta: float = 0.0,
     min_lr: float = 1e-5,
-) -> callback:
+) -> callback_t:
     """
     Reduce learning rate by `factor` if validation loss does not improve
     for `patience` epochs.
