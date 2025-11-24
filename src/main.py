@@ -125,13 +125,18 @@ def feature_engineering(df: pd.DataFrame, do_plots: bool = True) -> pd.DataFrame
         ("mean area", "mean smoothness"),
         ("mean concavity", "mean compactness"),
     ]
-    for x_feat, y_feat in feature_pairs:
-        plt.figure(figsize=(6, 4))
-        sns.scatterplot(
-            data=df, x=x_feat, y=y_feat, hue="target", palette={0: "red", 1: "green"}
-        )
-        plt.title(f"Scatter Plot: {x_feat} vs {y_feat}")
-        plt.show()
+    if do_plots:
+        for x_feat, y_feat in feature_pairs:
+            plt.figure(figsize=(6, 4))
+            sns.scatterplot(
+                data=df,
+                x=x_feat,
+                y=y_feat,
+                hue="target",
+                palette={0: "red", 1: "green"},
+            )
+            plt.title(f"Scatter Plot: {x_feat} vs {y_feat}")
+            plt.show()
 
     ### 3. Correlation Heatmap ###
     if do_plots:
@@ -223,8 +228,9 @@ def feature_engineering(df: pd.DataFrame, do_plots: bool = True) -> pd.DataFrame
         ["count", "mean", "median", "std", "variance", "min", "max", "range"]
     ]
 
-    print("\nStatistical Characterization of Numerical Data:")
-    print(stats_summary)
+    if do_plots:
+        print("\nStatistical Characterization of Numerical Data:")
+        print(stats_summary)
 
     return df_copy
 
@@ -268,7 +274,9 @@ def data_partioning(df: pd.DataFrame) -> tuple:
     return (x_train, y_train, x_val, y_val, x_test, y_test)
 
 
-def mini_batches(X: np.ndarray, y: np.ndarray, batch_size: int) -> list:
+def mini_batches(
+    X: np.ndarray, y: np.ndarray, batch_size: int
+) -> list[tuple[np.ndarray, np.ndarray]]:
     """
     Generate mini-batches from the dataset.
     Args:
@@ -295,7 +303,7 @@ class NeuralNetwork:
     A very simple fully-connected Neural Network built completely from scratch.
 
     Architecture:
-        [N input neurons] → [10 hidden neurons] → [output layer]
+        [N input neurons] -> [10 hidden neurons] -> [output layer]
 
     Parameters
     ----------
@@ -398,13 +406,13 @@ class NeuralNetwork:
         #########################################
         ### Weight Initialization             ###
         #########################################
-        ## Input → Hidden ##
+        ## Input -> Hidden ##
         self.weights_input_hidden = np.random.randn(input_size, hidden_size) * np.sqrt(
             2.0 / input_size
         )
         self.bias_hidden = np.zeros((1, hidden_size))
 
-        ## Hidden → Output ##
+        ## Hidden -> Output ##
         self.weights_hidden_output = np.random.randn(
             hidden_size, output_size
         ) * np.sqrt(2.0 / hidden_size)
@@ -421,11 +429,49 @@ class NeuralNetwork:
         #########################################
         ### Summary Printout                  ###
         #########################################
-        print("✓ Neural Network initialized successfully")
-        print(f"  Architecture: [{input_size} → {hidden_size} → {output_size}]")
+        print("Neural Network initialized successfully")
+        print(f"  Architecture: [{input_size} -> {hidden_size} -> {output_size}]")
         print(f"  Activation: {activation}")
         print(f"  Learning rate: {learning_rate}")
         print(f"  Task: {task}")
+
+    def __call__(self, x_batch: np.ndarray) -> tuple[np.ndarray, dict]:
+        """
+        Forward pass through the network.
+        Args:
+            x_batch (np.ndarray): Input data batch of shape (batch_size, input_size).
+        Returns:
+            tuple[np.ndarray, dict]: Output predictions and cache for backpropagation.
+        """
+        ### Input to hidden layer ###
+        z_hidden: np.ndarray = (
+            np.dot(x_batch, self.weights_input_hidden) + self.bias_hidden
+        )
+        a_hidden: np.ndarray = self.activation(z_hidden)
+
+        ### Hidden to output layer ###
+        z_output: np.ndarray = (
+            np.dot(a_hidden, self.weights_hidden_output) + self.bias_output
+        )
+        a_output: np.ndarray
+        if self.task == "classification":
+            if self.output_size == 1:
+                a_output = self.sigmoid(z_output)
+            else:
+                a_output = self.softmax(z_output)
+        else:
+            a_output = z_output
+
+        ### Set up the cache for backpropagation ###
+        cache: dict = {
+            "X": x_batch,
+            "z_hidden": z_hidden,
+            "a_hidden": a_hidden,
+            "z_output": z_output,
+            "output": a_output,
+        }
+
+        return (a_output, cache)
 
 
 def main() -> int:
