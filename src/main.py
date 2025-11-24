@@ -9,6 +9,13 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
+### ~~~ STATE MANAGEMENT ~~~ ###
+np.random.seed(42)
+TRAIN_RATIO = 0.7
+VAL_RATIO = 0.2
+BATCH_SIZE = 100
+EPOCHS = 50
+
 
 def load_data() -> pd.DataFrame:
     """
@@ -31,8 +38,36 @@ def load_data() -> pd.DataFrame:
 
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
-    """"""
-
+    """
+    Perform feature exploration, visualization, and preprocessing on the input dataset.
+    This function fulfills the following tasks:
+    **1. Feature Identification & Summary (Req. 2.1)**
+        - Generates a detailed summary table for all features, including:
+          data types, total/unique values, missing values, sample values,
+          min/max, mean, median, variance, and standard deviation.
+        - Prints the summary to the console.
+    **2. Visual Data Exploration (Req. 2.2)**
+        - Histograms for all non-target features.
+        - Scatter plots for selected feature pairs, colored by target class.
+        - Correlation heatmap using Pearson correlations.
+        - Box plots of all numerical features to reveal distribution shape and outliers.
+    **3. Missing Value Handling (Req. 2.3)**
+        - Detects missing values and prints counts.
+        - If missing data exists, imputes numerical columns with their column means.
+        - Prints explanation of the chosen imputation strategy.
+    **4. Statistical Characterization (Req. 2.4)**
+        - Computes extended descriptive statistics for all numerical features
+          (count, mean, median, std, variance, min, max, range).
+        - Prints the resulting statistics table.
+    Args:
+        df : pd.DataFrame
+            The raw dataset, expected to include a column named "target".
+    Returns:
+        pd.DataFrame
+            A cleaned and preprocessed copy of the dataset after handling missing
+            values and performing statistical analysis. No new engineered features
+            are added; this function focuses on profiling and preparing the data.
+    """
     ############################################################
     ### Requirement 2.1: Features Identification and Summary ###
     ############################################################
@@ -185,6 +220,58 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     return df_copy
 
 
+def data_partioning(df: pd.DataFrame) -> tuple:
+    """"""
+    # Get all columns except last one (features)
+    x = df.iloc[:, :-1].values
+
+    # Get only last column (target)
+    y = df.iloc[:, -1].values
+
+    # Set random seed for reproducibility
+    # Ensures that the random operations produce the same result every time we run the code.
+
+    # Total number of samples
+    n_samples = x.shape[0]
+
+    # Shuffle the indices
+    indices = np.random.permutation(n_samples)
+
+    # Compute split sizes
+    train_size = int(TRAIN_RATIO * n_samples)
+    val_size = int(VAL_RATIO * n_samples)
+
+    # Split indices
+    train_idx = indices[:train_size]
+    val_idx = indices[train_size : train_size + val_size]
+    test_idx = indices[train_size + val_size :]
+
+    # Create datasets
+    x_train, y_train = x[train_idx], y[train_idx]
+    x_val, y_val = x[val_idx], y[val_idx]
+    x_test, y_test = x[test_idx], y[test_idx]
+
+    # Print shapes to confirm
+    print(f"Training set: {x_train.shape}, {y_train.shape}")
+    print(f"Validation set: {x_val.shape}, {y_val.shape}")
+    print(f"Testing set: {x_test.shape}, {y_test.shape}")
+
+    return (x_train, y_train, x_val, y_val, x_test, y_test)
+
+
+def mini_batches(X, y, batch_size):
+    n_samples = X.shape[0]
+    mini_batches = []
+
+    for start_idx in range(0, n_samples, batch_size):
+        end_idx = min(start_idx + batch_size, n_samples)
+        X_batch = X[start_idx:end_idx]
+        y_batch = y[start_idx:end_idx]
+        mini_batches.append((X_batch, y_batch))
+
+    return mini_batches
+
+
 def main() -> int:
     """"""
     ### Section I ###
@@ -192,6 +279,10 @@ def main() -> int:
 
     ### Section II ###
     df = feature_engineering(df)
+
+    ### Section III ###
+    ## Data Partitioning ##
+    x_train, y_train, x_val, y_val, x_test, y_test = data_partioning(df)
 
     return 0
 
