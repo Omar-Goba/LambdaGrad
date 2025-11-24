@@ -30,8 +30,9 @@ RATIOS: dict[str, float] = {
     "validation": 0.15,
     "test": 0.15,
 }
-BATCH_SIZE: int = 32
-EPOCHS: int = 1000
+BATCH_SIZE: int = 100
+EPOCHS: int = 10000
+LEARNING_RATE: float = 0.1
 
 
 def load_data() -> pd.DataFrame:
@@ -194,6 +195,9 @@ def binary_cross_entropy_derivative(y_true: tensor_t, y_pred: tensor_t) -> tenso
     Returns:
         tensor_t: Derivative of Binary Cross-Entropy loss.
     """
+    raise DeprecationWarning(
+        "Use bce_with_sigmoid_last_layer_grad instead for numerical stability."
+    )
     ### avoid division by zero ###
     epsilon: float = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
@@ -206,10 +210,23 @@ def binary_cross_entropy_derivative(y_true: tensor_t, y_pred: tensor_t) -> tenso
     return bce_derivative
 
 
+### ~~~ LOSS DERIVATIVES ~~~ ###
+def bce_with_sigmoid_last_layer_grad(y_true: tensor_t, y_pred: tensor_t) -> tensor_t:
+    """
+    Gradient of binary cross-entropy wrt the *pre-activation* z
+    of the last sigmoid layer.
+
+    For sigmoid + BCE, we have:
+        dL/dz = (y_pred - y_true) / m
+    """
+    m = y_true.shape[0]
+    return (y_pred - y_true) / m
+
+
 LOSS_FUNCTIONS: dict[LossFunction, Callable[[tensor_t, tensor_t], float]] = {
     LossFunction.BCE: binary_cross_entropy,
 }
 
 LOSS_DERIVATIVES: dict[LossFunction, Callable[[tensor_t, tensor_t], tensor_t]] = {
-    LossFunction.BCE: binary_cross_entropy_derivative,
+    LossFunction.BCE: bce_with_sigmoid_last_layer_grad,
 }

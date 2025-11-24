@@ -133,7 +133,7 @@ def compute_gradients(
     rev_layers: list[Layer] = model.layers[::-1]
 
     ### backward pass ###
-    for layer in rev_layers:
+    for idx, layer in enumerate(rev_layers):
         """
         Backward pass through a single layer.
         """
@@ -148,13 +148,28 @@ def compute_gradients(
                 "before backward pass."
             )
 
-        ## get the derivative of the activation function ##
-        """
-        dL_dz = dL_dy * activation_derivative(z)
-        dL_dy is the gradient from the next layer
-        """
-        activation_derivative = ACTIVATION_DERIVATIVES[layer.activation]
-        dL_dz: tensor_t = activation_derivative(z) * grad_next
+        ## decide how to get dL/dz ##
+        if (
+            idx == 0
+            and model.loss_function is LossFunction.BCE
+            and layer.activation is ActivationFunction.SIGMOID
+        ):
+            """
+            This is done for numerical stability, as the derivative of BCE and sigmoid
+            result in a singularity when combined.
+            This in essence drops the derivative of the activation function from the equation.
+            As we are accounting for it in the derivative of the loss function directly.
+            the derivative of the loss can be found in util.py -> bce_with_sigmoid_last_layer_grad
+            """
+            dL_dz: tensor_t = grad_next
+        else:
+            # get the derivative of the activation function #
+            """
+            dL_dz = dL_dy * activation_derivative(z)
+            dL_dy is the gradient from the next layer
+            """
+            activation_derivative = ACTIVATION_DERIVATIVES[layer.activation]
+            dL_dz: tensor_t = activation_derivative(z) * grad_next
 
         ## compute the derivative w.r.t. weights ##
         """
