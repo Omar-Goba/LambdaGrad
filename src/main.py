@@ -155,6 +155,33 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     no missing values, using the mean is an effective and reasonable choice.
     """
 
+    #######################################################################
+    ### Requirement 2.4: Statistical Characterization of Numerical Data ###
+    #######################################################################
+
+    ### Select numeric features (exclude target) ###
+    numeric_features = df_copy.drop(columns="target")
+
+    ### Compute descriptive statistics ###
+    stats_summary = numeric_features.describe().T
+
+    ### Add median ###
+    stats_summary["median"] = numeric_features.median()
+
+    ### Add variance ###
+    stats_summary["variance"] = numeric_features.var()
+
+    ### Add range (max - min) ###
+    stats_summary["range"] = numeric_features.max() - numeric_features.min()
+
+    ### Reorder columns for clarity ###
+    stats_summary = stats_summary[
+        ["count", "mean", "median", "std", "variance", "min", "max", "range"]
+    ]
+
+    print("\nStatistical Characterization of Numerical Data:")
+    print(stats_summary)
+
     return df_copy
 
 
@@ -164,7 +191,7 @@ def main() -> int:
     df = load_data()
 
     ### Section II ###
-    feature_exploration(df)
+    df = feature_engineering(df)
 
     return 0
 
