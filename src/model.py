@@ -117,24 +117,6 @@ def comptute_accuracy(model: Model, y_true: tensor_t, y_pred: tensor_t) -> float
     return accuracy
 
 
-def apply_gradients(model: Model, grads_list: list[Gradients]) -> None:
-    """
-    Apply gradients to the model's layers.
-    Args:
-        model (Model): The neural network model.
-        grads_list (list[Gradients]): List of gradients for each layer.
-    """
-    raise DeprecationWarning("Use 'apple_gradients_to_layer' instead.")
-    if len(grads_list) != len(model.layers):
-        raise ValueError(
-            f"Number of gradients {len(grads_list)} does not match number of "
-            f"layers {len(model.layers)}"
-        )
-
-    for layer, grads in zip(model.layers, grads_list):
-        apple_gradients_to_layer(layer, grads, model.learning_rate)
-
-
 def compute_gradients(
     model: Model, x_batch: tensor_t, y_batch: tensor_t
 ) -> list[Gradients]:
@@ -251,7 +233,36 @@ def train_model(
     callbacks: list[callback_t] = [],
     do_shuffle: bool = True,
 ) -> History:
-    """"""
+    """
+    This function trains the model using whatever optimiser is passed to it.
+    It does the following:
+    - Initialises the history object to track training and validation loss and accuracy.
+    - Shuffles the training data if specified.
+    - Batches the training data.
+    - For each epoch:
+        - For each batch:
+            - Performs a forward pass.
+            - Computes the loss and accuracy.
+            - Computes the gradients.
+            - Applies the gradients using the optimiser.
+            - Updates the history.
+        - Computes validation loss and accuracy.
+        - Calls any callbacks with the current state.
+        - Checks for early stopping.
+    Args:
+        model (Model): The neural network model to be trained.
+        train_data (tuple[tensor_t, tensor_t]): The training data (features and labels).
+        val_data (tuple[tensor_t, tensor_t]): The validation data (features and labels).
+        epochs (int): The number of epochs to train the model.
+        batch_size (int): The size of each training batch.
+        optimiser (optimiser_t): The optimiser function to apply gradients.
+        callbacks (list[callback_t], optional): List of callback functions to be called
+            at the end of each epoch. Defaults to [].
+        do_shuffle (bool, optional): Whether to shuffle the training data before each epoch.
+            Defaults to True.
+    Returns:
+        History: The training history containing loss and accuracy for training and validation.
+    """
     ### init history ###
     history: History = History(
         train_loss=[],
@@ -338,62 +349,5 @@ def train_model(
     return history
 
 
-def main() -> int:
-    X: tensor_t = np.array(
-        [
-            [0, 0],
-            [0, 1],
-            [1, 0],
-            [1, 1],
-        ]
-    )
-    y: tensor_t = np.array(
-        [
-            [0],
-            [1],
-            [1],
-            [0],
-        ]
-    )
-
-    model: Model = create_model(
-        layers=[
-            create_layer(
-                input_dim=(2,),
-                output_dim=(3,),
-                activation=ActivationFunction.RELU,
-                name="layer1",
-            ),
-            create_layer(
-                input_dim=(3,),
-                output_dim=(1,),
-                activation=ActivationFunction.SIGMOID,
-                name="layer2",
-            ),
-        ],
-        loss_function=LossFunction.BCE,
-        learning_rate=0.1,
-    )
-
-    epochs: int = 10000
-    for epoch in range(epochs):
-        # Forward pass
-        y_pred: tensor_t = call_model(model, X)
-
-        # Compute loss
-        loss: float = compute_loss(model, y, y_pred)
-
-        # Compute gradients
-        grads_list: list[Gradients] = compute_gradients(model, X, y)
-
-        # Apply gradients
-        apply_gradients(model, grads_list)
-
-        if epoch % 100 == 0:
-            print(f"Epoch {epoch}, Loss: {loss}")
-
-    return 0
-
-
 if __name__ == "__main__":
-    exit(main())
+    ...

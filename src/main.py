@@ -14,7 +14,7 @@ from util import (
     AccuracyMetric,
 )
 from explore import feature_engineering
-from process import impute_data, split, batch_data
+from process import impute_data, split
 from callbacks import make_early_stopping_callback, make_lr_annealing_callback
 from optimiser import make_minibatch_sgd_optimiser
 from model import (
@@ -118,7 +118,7 @@ def main() -> int:
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
         optimiser=optimiser,
-        # callbacks=[early_stopping_callback, lr_annealing_callback],
+        callbacks=[early_stopping_callback, lr_annealing_callback],
     )
 
     ### plot the loss curves ###
