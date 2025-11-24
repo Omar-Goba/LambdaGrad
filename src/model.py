@@ -3,6 +3,7 @@ from tqdm import trange
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
+from process import batch_data
 from util import (
     tensor_t,
     optimiser_t,
@@ -245,8 +246,10 @@ def train_model(
     train_data: tuple[tensor_t, tensor_t],
     val_data: tuple[tensor_t, tensor_t],
     epochs: int,
+    batch_size: int,
     optimiser: optimiser_t,
     callbacks: list[callback_t] = [],
+    do_shuffle: bool = True,
 ) -> History:
     """"""
     ### init history ###
@@ -261,11 +264,20 @@ def train_model(
     tr_X, tr_y = train_data
     val_X, val_y = val_data
 
+    ### shuffle training data ###
+    if do_shuffle:
+        perm: np.ndarray = np.random.permutation(tr_X.shape[0])
+        tr_X = tr_X[perm]
+        tr_y = tr_y[perm]
+
+    ### batch training data ###
+    tr_X_batches, tr_y_batches = batch_data(tr_X, tr_y, batch_size)
+
     ### training loop ###
     for _ in trange(epochs, desc="Training Epochs"):
         current_loss = 0.0
         current_accuracy = 0.0
-        for X_batch, y_batch in zip(tr_X, tr_y):
+        for X_batch, y_batch in zip(tr_X_batches, tr_y_batches):
             """
             1. do a forward pass
             2. compute the loss

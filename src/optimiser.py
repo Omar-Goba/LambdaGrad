@@ -5,15 +5,15 @@
 from util import optimiser_t, Model, Gradients
 
 
-def make_minibatch_sgd_optimizer(
+def make_minibatch_sgd_optimiser(
     batch_size: int,
 ) -> optimiser_t:
     """
-    Create a mini-batch SGD optimizer.
+    Create a mini-batch SGD optimiser.
     Args:
         batch_size (int): The size of each mini-batch.
     Returns:
-        Optimizer: A mini-batch SGD optimizer function. (THIS IS CLOSURE)
+        Optimiser: A mini-batch SGD optimiser function. (THIS IS CLOSURE)
     """
 
     def step(model: Model, gradients_list: list[Gradients]) -> None:
