@@ -19,6 +19,12 @@ class Layer:
     z: tensor_t | None
 
 
+@dataclass
+class Gradients:
+    dW: tensor_t
+    db: tensor_t
+
+
 def create_layer(
     input_dim: dim_t,
     output_dim: dim_t,
@@ -93,6 +99,33 @@ def layer_to_str(layer: Layer) -> str:
     )
 
 
+def apple_gradients_to_layer(
+    layer: Layer, grads: Gradients, learning_rate: float
+) -> None:
+    """
+    Update the layer's weights and bias using the provided gradients and learning rate.
+    Args:
+        layer (Layer): The neural network layer.
+        grads (Gradients): The gradients for weights and bias.
+        learning_rate (float): The learning rate for the update.
+    """
+    ### make sure shapes match ###
+    if layer.weights.shape != grads.dW.shape:
+        raise ValueError(
+            f"Weight gradient shape {grads.dW.shape} does not match layer weight "
+            f"shape {layer.weights.shape}"
+        )
+    if layer.bias.shape != grads.db.shape:
+        raise ValueError(
+            f"Bias gradient shape {grads.db.shape} does not match layer bias "
+            f"shape {layer.bias.shape}"
+        )
+
+    ### update weights and bias ###
+    layer.weights -= learning_rate * grads.dW
+    layer.bias -= learning_rate * grads.db
+
+
 def main() -> int:
     """"""
     batch_size, features, outputs = 4, 8, 10
@@ -104,7 +137,13 @@ def main() -> int:
         name="hidden_layer_1",
     )
     output: tensor_t = call_layer(layer, x)
-    print(layer_to_str(layer))
+    grads = Gradients(
+        dW=np.random.randn(features, outputs),
+        db=np.random.randn(1, outputs),
+    )
+    print(layer.bias)
+    apple_gradients_to_layer(layer, grads, learning_rate=0.01)
+    print(layer.bias)
     return 0
 
 

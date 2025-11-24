@@ -6,8 +6,10 @@ import numpy as np
 from util import LossFunction, LOSS_FUNCTIONS, ActivationFunction
 from layer import (
     Layer,
+    Gradients,
     create_layer,
     call_layer,
+    apple_gradients_to_layer,
     layer_to_str,
 )
 
@@ -89,6 +91,23 @@ def compute_loss(model: Model, y_true: np.ndarray, y_pred: np.ndarray) -> float:
     loss: float = loss_function(y_true, y_pred)
 
     return loss
+
+
+def apply_gradients(model: Model, grads_list: list[Gradients]) -> None:
+    """
+    Apply gradients to the model's layers.
+    Args:
+        model (Model): The neural network model.
+        grads_list (list[Gradients]): List of gradients for each layer.
+    """
+    if len(grads_list) != len(model.layers):
+        raise ValueError(
+            f"Number of gradients {len(grads_list)} does not match number of "
+            f"layers {len(model.layers)}"
+        )
+
+    for layer, grads in zip(model.layers, grads_list):
+        apple_gradients_to_layer(layer, grads, model.learning_rate)
 
 
 def model_to_str(model: Model) -> str:
