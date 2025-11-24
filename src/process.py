@@ -1,8 +1,9 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
 import pandas as pd
+import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
-from util import tensor_t, RANDOM_SEED
+from util import tensor_t, RANDOM_SEED, TARGET_COLUMN
 
 
 def impute_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -52,11 +53,49 @@ def split(df: pd.DataFrame, ratios: dict[str, float]) -> dict[str, tensor_t]:
     splits: dict = {}
     previous_index: int = 0
     for i, (split_name, _) in enumerate(ratios.items()):
-        split_index = split_indices[i]
-        splits[split_name] = df.iloc[previous_index:split_index].to_numpy()
+        split_index: int = split_indices[i]
+        split_df: pd.DataFrame = df.iloc[previous_index:split_index]
+
+        ### separate features and target ###
+        X: tensor_t = split_df.drop(columns=[TARGET_COLUMN]).to_numpy()
+        y: tensor_t = split_df[TARGET_COLUMN].to_numpy().reshape(-1, 1)
+
+        ### store the split ###
+        splits[split_name] = (X, y)
+
+        ### update previous index ###
         previous_index = split_index
 
     ### assure all data is used ###
     assert previous_index == len(df), "Not all data was used in the splits."
 
     return splits
+
+
+def batch_data(X: tensor_t, y: tensor_t, batch_size: int) -> tuple[tensor_t, tensor_t]:
+    """
+    Generate mini-batches from the dataset.
+    Args:
+        X (tensor_t): Feature matrix.
+        y (tensor_t): Target vector.
+        batch_size (int): Size of each mini-batch.
+    Returns:
+        tuple[nd.ndarray, ndarray]: a tuple containing mini-batches of features and targets.
+    """
+    ### init some stuff ###
+    n_samples = X.shape[0]
+    n_full_batches = n_samples // batch_size
+
+    ### quick error check ###
+    if n_full_batches == 0:
+        raise ValueError("batch_size is larger than the number of samples.")
+
+    ### trim off the remainder so all batches are equal ###
+    x_trimmed = X[: n_full_batches * batch_size]
+    y_trimmed = y[: n_full_batches * batch_size]
+
+    ### split into equal-sized batches (no remainder) ###
+    x_batches = np.array(np.split(x_trimmed, n_full_batches))
+    y_batches = np.array(np.split(y_trimmed, n_full_batches))
+
+    return (x_batches, y_batches)

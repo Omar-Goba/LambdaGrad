@@ -23,12 +23,15 @@ class LossFunction(str, Enum):
 
 
 ### ~~~ STATE MANAGEMENT ~~~ ###
+TARGET_COLUMN: str = "target"
 RANDOM_SEED: int = 42
 RATIOS: dict[str, float] = {
     "train": 0.7,
     "validation": 0.15,
     "test": 0.15,
 }
+BATCH_SIZE: int = 32
+EPOCHS: int = 1000
 
 
 def load_data() -> pd.DataFrame:

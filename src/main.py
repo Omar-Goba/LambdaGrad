@@ -2,9 +2,9 @@
 # None
 
 ### ~~~ Local IMPORTS ~~~ ###
-from util import load_data, RATIOS
+from util import load_data, RATIOS, BATCH_SIZE, EPOCHS, tensor_t
 from explore import feature_engineering
-from process import impute_data, split
+from process import impute_data, split, batch_data
 
 
 ### ~~~ STATE MANAGEMENT ~~~ ###
@@ -24,6 +24,12 @@ def main() -> int:
 
     ### split the data ###
     splits = split(df, RATIOS)
+    tr_X, tr_y = splits["train"]
+    vl_X, vl_y = splits["validation"]
+    ts_X, ts_y = splits["test"]
+
+    ### batch the data ###
+    tr_X_batches, tr_y_batches = batch_data(tr_X, tr_y, BATCH_SIZE)
 
     return 0
 
