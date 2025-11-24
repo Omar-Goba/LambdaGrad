@@ -1,14 +1,12 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
-from pydantic import BaseModel
+from dataclasses import dataclass
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
 from util import dim_t, tensor_t, ActivationFunction, ACTIVATION_FUNCTIONS
 
+
 ### ~~~ TYPE DEFINITIONS ~~~ ###
-from dataclasses import dataclass
-
-
 @dataclass
 class Layer:
     name: str

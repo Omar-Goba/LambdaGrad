@@ -18,6 +18,10 @@ class ActivationFunction(str, Enum):
     LINEAR = "linear"
 
 
+class LossFunction(str, Enum):
+    BCE = "binary_cross_entropy"
+
+
 ### ~~~ STATE MANAGEMENT ~~~ ###
 RANDOM_SEED: int = 42
 RATIOS: dict[str, float] = {
@@ -154,4 +158,30 @@ ACTIVATION_DERIVATIVES: dict[ActivationFunction, Callable[[tensor_t], tensor_t]]
     ActivationFunction.SIGMOID: sigmoid_derivative,
     ActivationFunction.TANH: tanh_derivative,
     ActivationFunction.LINEAR: linear_derivative,
+}
+
+
+def binary_cross_entropy(y_true: tensor_t, y_pred: tensor_t) -> float:
+    """
+    Compute the Binary Cross-Entropy loss.
+    Args:
+        y_true (tensor_t): True labels.
+        y_pred (tensor_t): Predicted labels.
+    Returns:
+        float: Binary Cross-Entropy loss.
+    """
+    ### avoid log(0) ###
+    epsilon: float = 1e-15
+    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+
+    ### compute BCE ###
+    bce: float = (
+        -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+    ).astype(float)
+
+    return bce
+
+
+LOSS_FUNCTIONS: dict[LossFunction, Callable[[tensor_t, tensor_t], float]] = {
+    LossFunction.BCE: binary_cross_entropy,
 }
