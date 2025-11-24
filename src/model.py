@@ -1,5 +1,6 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
 from dataclasses import dataclass
+from tqdm import trange
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
@@ -221,6 +222,60 @@ def model_to_str(model: Model) -> str:
     )
 
     return model_str
+
+
+def train_model(
+    model: Model,
+    train_data: tuple[tensor_t, tensor_t],
+    val_data: tuple[tensor_t, tensor_t],
+    epochs: int,
+) -> dict[str, list[float]]:
+    """"""
+    ### init history ###
+    history = {
+        "train_loss": [],
+        "val_loss": [],
+    }
+    ### unpack data ###
+    tr_X, tr_y = train_data
+    val_X, val_y = val_data
+
+    ### training loop ###
+    for _ in trange(epochs, desc="Training Epochs"):
+        current_loss = 0.0
+        for X_batch, y_batch in zip(tr_X, tr_y):
+            """
+            1. do a forward pass
+            2. compute the loss
+            3. compute the gradients
+            4. apply the gradients
+            5. track the loss
+            """
+            ### call the model ###
+            y_pred = call_model(model, X_batch)
+
+            ### compute loss ###
+            loss = compute_loss(model, y_batch, y_pred)
+
+            ### compute gradients ###
+            grads = compute_gradients(model, X_batch, y_batch)
+
+            ### apply gradients ###
+            apply_gradients(model, grads)
+
+            ### track loss ###
+            current_loss += loss
+
+        ### average loss over all batches ###
+        average_loss = current_loss / len(tr_X)
+        history["train_loss"].append(average_loss)
+
+        ### validation loss ###
+        y_val_pred = call_model(model, val_X)
+        val_loss = compute_loss(model, val_y, y_val_pred)
+        history["val_loss"].append(val_loss)
+
+    return history
 
 
 def main() -> int:
