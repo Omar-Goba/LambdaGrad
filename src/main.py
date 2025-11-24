@@ -15,6 +15,7 @@ TRAIN_RATIO = 0.7
 VAL_RATIO = 0.2
 BATCH_SIZE = 100
 EPOCHS = 50
+LEARNING_RATE = 0.01
 
 
 def load_data() -> pd.DataFrame:
@@ -37,7 +38,7 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
+def feature_engineering(df: pd.DataFrame, do_plots: bool = True) -> pd.DataFrame:
     """
     Perform feature exploration, visualization, and preprocessing on the input dataset.
     This function fulfills the following tasks:
@@ -62,6 +63,8 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     Args:
         df : pd.DataFrame
             The raw dataset, expected to include a column named "target".
+        do_plots : bool, optional
+            Whether to generate and display visualizations. Default is True.
     Returns:
         pd.DataFrame
             A cleaned and preprocessed copy of the dataset after handling missing
@@ -97,8 +100,9 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     ### some printing ###
-    print("Enhanced Feature Summary Table:")
-    print(feature_summary)
+    if do_plots:
+        print("Enhanced Feature Summary Table:")
+        print(feature_summary)
 
     ################################################
     ### Requirement 2.2: Visual Data Exploration ###
@@ -111,8 +115,9 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df_features.hist(
         bins=15, figsize=(20, 15), layout=(6, 5), color="skyblue", edgecolor="black"
     )
-    plt.suptitle("Feature Distributions", fontsize=20)
-    plt.show()
+    if do_plots:
+        plt.suptitle("Feature Distributions", fontsize=20)
+        plt.show()
 
     ### 2. Scatter Plots for Selected Feature Pairs ###
     feature_pairs = [
@@ -129,11 +134,12 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         plt.show()
 
     ### 3. Correlation Heatmap ###
-    plt.figure(figsize=(15, 12))
-    corr_matrix = df.corr()
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5)
-    plt.title("Correlation Heatmap of Features", fontsize=18)
-    plt.show()
+    if do_plots:
+        plt.figure(figsize=(15, 12))
+        corr_matrix = df.corr()
+        sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5)
+        plt.title("Correlation Heatmap of Features", fontsize=18)
+        plt.show()
 
     ### 4. Box Plots for All Numeric Features ###
     ## Selecting numeric columns (all features except target) ##
@@ -162,8 +168,9 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         fig.delaxes(axes[idx])
 
     ### Adjust layout and show ###
-    plt.tight_layout()
-    plt.show()
+    if do_plots:
+        plt.tight_layout()
+        plt.show()
 
     ### ################################################
     ### **Requirement 2.3: Handling Missing Values** ###
@@ -171,12 +178,14 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
 
     ### Check for missing values ###
     missing_values = df_copy.isnull().sum()
-    print("Missing values per feature:")
-    print(missing_values)
+    if do_plots:
+        print("Missing values per feature:")
+        print(missing_values)
 
     ### Check if any column has missing values ###
     if missing_values.sum() == 0:
-        print("\nNo missing values found. No imputation or removal needed.")
+        if do_plots:
+            print("\nNo missing values found. No imputation or removal needed.")
     else:
         ## if there were missing values, we would fill them with the mean of the column ##
         df_copy.fillna(df_copy.mean(), inplace=True)
@@ -259,7 +268,16 @@ def data_partioning(df: pd.DataFrame) -> tuple:
     return (x_train, y_train, x_val, y_val, x_test, y_test)
 
 
-def mini_batches(X, y, batch_size):
+def mini_batches(X: np.ndarray, y: np.ndarray, batch_size: int) -> list:
+    """
+    Generate mini-batches from the dataset.
+    Args:
+        X (np.ndarray): Feature matrix.
+        y (np.ndarray): Target vector.
+        batch_size (int): Size of each mini-batch.
+    Returns:
+        list: A list of tuples, each containing a mini-batch of (X_batch, y_batch).
+    """
     n_samples = X.shape[0]
     mini_batches = []
 
@@ -272,17 +290,175 @@ def mini_batches(X, y, batch_size):
     return mini_batches
 
 
+class NeuralNetwork:
+    """
+    A very simple fully-connected Neural Network built completely from scratch.
+
+    Architecture:
+        [N input neurons] → [10 hidden neurons] → [output layer]
+
+    Parameters
+    ----------
+    input_size : int
+        Number of input features.
+    hidden_size : int, optional
+        Number of neurons in the hidden layer. Default is 10.
+    output_size : int, optional
+        Number of output neurons. For binary classification this is typically 1.
+    learning_rate : float, optional
+        Learning rate used for gradient descent updates.
+    activation : str, optional
+        Activation function for the hidden layer. One of:
+        ["sigmoid", "relu", "tanh"].
+    task : str, optional
+        Task type. Currently used for display/logging purposes
+        (e.g., "classification").
+    """
+
+    ##########################################################
+    ### Internal Activation Functions for the Neural Net  ###
+    ##########################################################
+    @staticmethod
+    def sigmoid(z: np.ndarray) -> np.ndarray:
+        """Numerically-stable sigmoid."""
+        z = np.clip(z, -500, 500)
+        return 1 / (1 + np.exp(-z))
+
+    @staticmethod
+    def sigmoid_derivative(z: np.ndarray) -> np.ndarray:
+        """Derivative of the sigmoid function."""
+        sig = NeuralNetwork.sigmoid(z)
+        return sig * (1 - sig)
+
+    @staticmethod
+    def relu(z: np.ndarray) -> np.ndarray:
+        """ReLU activation."""
+        return np.maximum(0, z)
+
+    @staticmethod
+    def relu_derivative(z: np.ndarray) -> np.ndarray:
+        """Derivative of ReLU."""
+        return (z > 0).astype(float)
+
+    @staticmethod
+    def tanh(z: np.ndarray) -> np.ndarray:
+        """tanh activation."""
+        return np.tanh(z)
+
+    @staticmethod
+    def tanh_derivative(z: np.ndarray) -> np.ndarray:
+        """Derivative of tanh."""
+        return 1 - np.tanh(z) ** 2
+
+    @staticmethod
+    def softmax(z: np.ndarray) -> np.ndarray:
+        """Row-wise softmax for multi-class outputs."""
+        exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
+        return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int = 10,
+        output_size: int = 1,
+        learning_rate: float = 0.01,
+        activation: str = "sigmoid",
+        task: str = "classification",
+    ) -> None:
+        """
+        Initialize the neural network with given architecture and hyperparameters.
+        """
+
+        #########################################
+        ### Save Network Configuration       ###
+        #########################################
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.learning_rate = learning_rate
+        self.task = task
+
+        #########################################
+        ### Choose Hidden Layer Activation    ###
+        #########################################
+        self.activation_name = activation
+
+        if activation == "sigmoid":
+            self.activation = NeuralNetwork.sigmoid
+            self.activation_derivative = NeuralNetwork.sigmoid_derivative
+        elif activation == "relu":
+            self.activation = NeuralNetwork.relu
+            self.activation_derivative = NeuralNetwork.relu_derivative
+        elif activation == "tanh":
+            self.activation = NeuralNetwork.tanh
+            self.activation_derivative = NeuralNetwork.tanh_derivative
+        else:
+            raise ValueError(f"Unknown activation: {activation}")
+
+        #########################################
+        ### Weight Initialization             ###
+        #########################################
+        ## Input → Hidden ##
+        self.weights_input_hidden = np.random.randn(input_size, hidden_size) * np.sqrt(
+            2.0 / input_size
+        )
+        self.bias_hidden = np.zeros((1, hidden_size))
+
+        ## Hidden → Output ##
+        self.weights_hidden_output = np.random.randn(
+            hidden_size, output_size
+        ) * np.sqrt(2.0 / hidden_size)
+        self.bias_output = np.zeros((1, output_size))
+
+        #########################################
+        ### Training History Containers       ###
+        #########################################
+        self.train_losses: list[float] = []
+        self.train_accuracies: list[float] = []
+        self.val_losses: list[float] = []
+        self.val_accuracies: list[float] = []
+
+        #########################################
+        ### Summary Printout                  ###
+        #########################################
+        print("✓ Neural Network initialized successfully")
+        print(f"  Architecture: [{input_size} → {hidden_size} → {output_size}]")
+        print(f"  Activation: {activation}")
+        print(f"  Learning rate: {learning_rate}")
+        print(f"  Task: {task}")
+
+
 def main() -> int:
     """"""
     ### Section I ###
     df = load_data()
 
     ### Section II ###
-    df = feature_engineering(df)
+    df = feature_engineering(df, do_plots=False)
 
     ### Section III ###
     ## Data Partitioning ##
     x_train, y_train, x_val, y_val, x_test, y_test = data_partioning(df)
+
+    ## Batch Generation ##
+    train_batches = mini_batches(x_train, y_train, BATCH_SIZE)
+
+    ## Init the model ##
+    # Determine number of classes #
+    n_classes = len(np.unique(y_train))
+
+    # Determine output size (binary vs multi-class) #
+    output_neurons = n_classes if n_classes > 2 else 1
+
+    # Create Neural Network instance #
+    nn = NeuralNetwork(
+        input_size=x_train.shape[1],
+        hidden_size=10,
+        output_size=output_neurons,
+        learning_rate=LEARNING_RATE,
+        activation="sigmoid",
+        task="classification",
+    )
 
     return 0
 
