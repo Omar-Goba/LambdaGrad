@@ -16,7 +16,7 @@ from util import (
 from explore import feature_engineering
 from process import impute_data, split
 from callbacks import make_early_stopping_callback, make_lr_annealing_callback
-from optimiser import make_minibatch_sgd_optimiser
+from optimiser import make_minibatch_sgd_optimiser, make_adam_optimizer
 from model import (
     Model,
     call_model,
@@ -68,9 +68,6 @@ def main() -> int:
     vl_X, vl_y = splits["validation"]
     ts_X, ts_y = splits["test"]
 
-    ### init optimiser ###
-    optimiser = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
-
     ### init model ###
     model = Model(
         layers=[
@@ -97,6 +94,11 @@ def main() -> int:
         loss_function=LossFunction.BCE,
         accuracy_function=AccuracyMetric.BINARY_ACCURACY,
     )
+
+    ### init optimiser ###
+    minibatch_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
+    adam_optim = make_adam_optimizer(model=model)
+    optimiser = adam_optim
 
     ### set up callbacks ###
     early_stopping_callback = make_early_stopping_callback(
