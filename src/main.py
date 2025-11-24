@@ -5,6 +5,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.metrics import confusion_matrix
 from matplotlib import pyplot as plt
 from ucimlrepo import fetch_ucirepo
+from tqdm import trange
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -13,7 +14,7 @@ import numpy as np
 np.random.seed(42)
 TRAIN_RATIO = 0.7
 VAL_RATIO = 0.2
-BATCH_SIZE = 100
+BATCH_SIZE = 32
 EPOCHS = 50
 LEARNING_RATE = 0.01
 
@@ -276,7 +277,7 @@ def data_partioning(df: pd.DataFrame) -> tuple:
 
 def mini_batches(
     X: np.ndarray, y: np.ndarray, batch_size: int
-) -> list[tuple[np.ndarray, np.ndarray]]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Generate mini-batches from the dataset.
     Args:
@@ -284,18 +285,25 @@ def mini_batches(
         y (np.ndarray): Target vector.
         batch_size (int): Size of each mini-batch.
     Returns:
-        list: A list of tuples, each containing a mini-batch of (X_batch, y_batch).
+        tuple[nd.ndarray, ndarray]: a tuple containing mini-batches of features and targets.
     """
+    ### init some stuff ###
     n_samples = X.shape[0]
-    mini_batches = []
+    n_full_batches = n_samples // batch_size
 
-    for start_idx in range(0, n_samples, batch_size):
-        end_idx = min(start_idx + batch_size, n_samples)
-        X_batch = X[start_idx:end_idx]
-        y_batch = y[start_idx:end_idx]
-        mini_batches.append((X_batch, y_batch))
+    ### quick error check ###
+    if n_full_batches == 0:
+        raise ValueError("batch_size is larger than the number of samples.")
 
-    return mini_batches
+    ### trim off the remainder so all batches are equal ###
+    x_trimmed = X[: n_full_batches * batch_size]
+    y_trimmed = y[: n_full_batches * batch_size]
+
+    ### split into equal-sized batches (no remainder) ###
+    x_batches = np.array(np.split(x_trimmed, n_full_batches))
+    y_batches = np.array(np.split(y_trimmed, n_full_batches))
+
+    return (x_batches, y_batches)
 
 
 class NeuralNetwork:
@@ -363,6 +371,15 @@ class NeuralNetwork:
         """Row-wise softmax for multi-class outputs."""
         exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
         return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+
+    @staticmethod
+    def compute_loss_BCE(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Binary Cross-Entropy Loss for binary classification."""
+        m = y_true.shape[0]
+        # Clip predictions to avoid log(0)
+        y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
+        loss = -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        return loss
 
     def __init__(
         self,
@@ -522,6 +539,57 @@ class NeuralNetwork:
 
         return grad
 
+    def update_parameters(self, grad: dict) -> None:
+        """
+        Update network parameters using computed gradients.
+        Args:
+            grad (dict): Gradients for weights and biases.
+        Return:
+            None
+        """
+        ### Update hidden to output weights and biases ###
+        self.weights_hidden_output -= self.learning_rate * grad["d_W_hidden_output"]
+        self.bias_output -= self.learning_rate * grad["d_b_output"]
+
+        ### Update input to hidden weights and biases ###
+        self.weights_input_hidden -= self.learning_rate * grad["d_W_input_hidden"]
+        self.bias_hidden -= self.learning_rate * grad["d_b_hidden"]
+
+    def train(self, x: np.ndarray, y: np.ndarray) -> float:
+        """
+        Train the neural network on a batch of data.
+        Args:
+            x (np.ndarray): Input data with dim = (-1, batch_size, input_size).
+            y (np.ndarray): True labels for the batch with dim = (-1, batch_size).
+        Returns:
+            float: Loss for the batch.
+        """
+        ### Shuffle the data ###
+        shuffled_samples = np.random.permutation(x.shape[1])
+        x_shuffled = x[:, shuffled_samples, :]
+        y_shuffled = y[:, shuffled_samples]
+
+        ### init some stuff ###
+        history: list = []
+
+        ### Training Loop ###
+        for epoch in trange(EPOCHS, desc="Training Epochs"):
+            state: dict = {
+                "epoch": epoch,
+            }
+            for batch_idx in trange(x.shape[0], desc="Training Batches"):
+                ## Forward pass ##
+                y_pred, cache = self(x_shuffled[batch_idx])
+
+                ## Compute loss ##
+                batch_loss = self.compute_loss_BCE(y_shuffled[batch_idx], y_pred)
+
+                ## Backpropagation ##
+                gradients = self.backprop(y_shuffled[batch_idx], cache)
+
+                ## Update parameters ##
+                self.update_parameters(gradients)
+
 
 def main() -> int:
     """"""
@@ -554,6 +622,8 @@ def main() -> int:
         activation="sigmoid",
         task="classification",
     )
+
+    ## Training Loop ##
 
     return 0
 
