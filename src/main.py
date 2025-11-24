@@ -1,10 +1,8 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
 from matplotlib import pyplot as plt
-from tqdm import trange
 
 ### ~~~ Local IMPORTS ~~~ ###
 from util import (
-    tensor_t,
     load_data,
     RATIOS,
     BATCH_SIZE,

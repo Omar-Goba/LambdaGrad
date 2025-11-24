@@ -20,6 +20,7 @@ class ActivationFunction(str, Enum):
 
 class LossFunction(str, Enum):
     BCE = "binary_cross_entropy"
+    MSE = "mean_squared_error"
 
 
 ### ~~~ STATE MANAGEMENT ~~~ ###
@@ -186,6 +187,19 @@ def binary_cross_entropy(y_true: tensor_t, y_pred: tensor_t) -> float:
     return bce
 
 
+def mean_squared_error(y_true: tensor_t, y_pred: tensor_t) -> float:
+    """
+    Compute the Mean Squared Error loss.
+    Args:
+        y_true (tensor_t): True labels.
+        y_pred (tensor_t): Predicted labels.
+    Returns:
+        float: Mean Squared Error loss.
+    """
+    mse: float = np.mean((y_true - y_pred) ** 2).astype(float)
+    return mse
+
+
 def binary_cross_entropy_derivative(y_true: tensor_t, y_pred: tensor_t) -> tensor_t:
     """
     Compute the derivative of the Binary Cross-Entropy loss.
@@ -210,7 +224,6 @@ def binary_cross_entropy_derivative(y_true: tensor_t, y_pred: tensor_t) -> tenso
     return bce_derivative
 
 
-### ~~~ LOSS DERIVATIVES ~~~ ###
 def bce_with_sigmoid_last_layer_grad(y_true: tensor_t, y_pred: tensor_t) -> tensor_t:
     """
     Gradient of binary cross-entropy wrt the *pre-activation* z
@@ -223,10 +236,25 @@ def bce_with_sigmoid_last_layer_grad(y_true: tensor_t, y_pred: tensor_t) -> tens
     return (y_pred - y_true) / m
 
 
+def mean_squared_error_derivative(y_true: tensor_t, y_pred: tensor_t) -> tensor_t:
+    """
+    Compute the derivative of the Mean Squared Error loss.
+    Args:
+        y_true (tensor_t): True labels.
+        y_pred (tensor_t): Predicted labels.
+    Returns:
+        tensor_t: Derivative of Mean Squared Error loss.
+    """
+    mse_derivative: tensor_t = (2 * (y_pred - y_true)) / y_true.shape[0]
+    return mse_derivative
+
+
 LOSS_FUNCTIONS: dict[LossFunction, Callable[[tensor_t, tensor_t], float]] = {
     LossFunction.BCE: binary_cross_entropy,
+    LossFunction.MSE: mean_squared_error,
 }
 
 LOSS_DERIVATIVES: dict[LossFunction, Callable[[tensor_t, tensor_t], tensor_t]] = {
     LossFunction.BCE: bce_with_sigmoid_last_layer_grad,
+    LossFunction.MSE: mean_squared_error_derivative,
 }
