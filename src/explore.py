@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
+def feature_engineering(df: pd.DataFrame) -> int:
     """
     Perform feature exploration, visualization, and preprocessing on the input dataset.
     This function fulfills the following tasks:
@@ -28,10 +28,7 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
             The raw dataset, expected to include a column named "target".
             Whether to generate and display visualizations. Default is True.
     Returns:
-        pd.DataFrame
-            A cleaned and preprocessed copy of the dataset after handling missing
-            values and performing statistical analysis. No new engineered features
-            are added; this function focuses on profiling and preparing the data.
+        int: Status code (0 for success).
     """
     ############################################################
     ### Requirement 2.1: Features Identification and Summary ###
@@ -161,4 +158,4 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     print("\nStatistical Characterization of Numerical Data:")
     print(stats_summary)
 
-    return df_copy
+    return 0
