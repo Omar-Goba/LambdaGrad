@@ -473,6 +473,55 @@ class NeuralNetwork:
 
         return (a_output, cache)
 
+    def backprop(self, y_batch: np.ndarray, cache: dict) -> dict:
+        """
+        Backpropagation to compute gradients.
+        Args:
+            y_batch (np.ndarray): True labels for the batch.
+            cache (dict): Cached values from the forward pass.
+        Returns:
+            dict: Gradients for weights and biases.
+        """
+        ### Set some stuff ###
+        x_batch = cache["X"]
+        batch_dim = x_batch.shape[0]
+        a_hidden = cache["a_hidden"]
+        z_hidden = cache["z_hidden"]
+        y_hat = cache["output"]
+
+        ### Insure correct dim for the labels ###
+        if y_batch.ndim == 1:
+            y_batch = y_batch.reshape(-1, 1)
+
+        ### Calcute for the epsilon ###
+        epsilon: np.ndarray = y_hat - y_batch
+
+        ### Calculate the gradients for hidden to output weights and biases
+        d_W_hidden_output = np.dot(a_hidden.T, epsilon) / batch_dim
+        d_b_output = np.sum(epsilon, axis=0, keepdims=True) / batch_dim
+
+        ### Backpropagate to hidden layer ###
+        """
+        This is needed to calculate the gradients for the input to hidden weights and biases.
+        As we are using the chain rule but for partial derivatives.
+        """
+        hidden_error = np.dot(epsilon, self.weights_hidden_output.T)
+        hidden_delta = hidden_error * self.activation_derivative(z_hidden)
+
+        ### Calculate gradients for input to hidden weights and biases ###
+        d_W_input_hidden = np.dot(x_batch.T, hidden_delta) / batch_dim
+        d_b_hidden = np.sum(hidden_delta, axis=0, keepdims=True) / batch_dim
+
+        ### Init the gradient ###
+        grad: dict = {
+            "d_W_hidden_output": d_W_hidden_output,
+            "d_b_output": d_b_output,
+            "d_W_input_hidden": d_W_input_hidden,
+            "d_b_hidden": d_b_hidden,
+        }
+
+        return grad
+
 
 def main() -> int:
     """"""
