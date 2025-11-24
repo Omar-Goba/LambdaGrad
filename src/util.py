@@ -182,6 +182,31 @@ def binary_cross_entropy(y_true: tensor_t, y_pred: tensor_t) -> float:
     return bce
 
 
+def binary_cross_entropy_derivative(y_true: tensor_t, y_pred: tensor_t) -> tensor_t:
+    """
+    Compute the derivative of the Binary Cross-Entropy loss.
+    Args:
+        y_true (tensor_t): True labels.
+        y_pred (tensor_t): Predicted labels.
+    Returns:
+        tensor_t: Derivative of Binary Cross-Entropy loss.
+    """
+    ### avoid division by zero ###
+    epsilon: float = 1e-15
+    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+
+    ### compute derivative ###
+    bce_derivative: tensor_t = (
+        -((y_true / y_pred) - ((1 - y_true) / (1 - y_pred))) / y_true.shape[0]
+    )
+
+    return bce_derivative
+
+
 LOSS_FUNCTIONS: dict[LossFunction, Callable[[tensor_t, tensor_t], float]] = {
     LossFunction.BCE: binary_cross_entropy,
+}
+
+LOSS_DERIVATIVES: dict[LossFunction, Callable[[tensor_t, tensor_t], tensor_t]] = {
+    LossFunction.BCE: binary_cross_entropy_derivative,
 }

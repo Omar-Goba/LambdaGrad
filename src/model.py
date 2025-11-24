@@ -3,7 +3,14 @@ from dataclasses import dataclass
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
-from util import LossFunction, LOSS_FUNCTIONS, ActivationFunction
+from util import (
+    LossFunction,
+    LOSS_FUNCTIONS,
+    LOSS_DERIVATIVES,
+    ActivationFunction,
+    ACTIVATION_DERIVATIVES,
+    tensor_t,
+)
 from layer import (
     Layer,
     Gradients,
@@ -54,14 +61,14 @@ def create_model(
     return model
 
 
-def call_model(model: Model, x: np.ndarray) -> np.ndarray:
+def call_model(model: Model, x: tensor_t) -> tensor_t:
     """
     Forward pass through the model.
     Args:
         model (Model): The neural network model.
-        x (np.ndarray): The input tensor.
+        x (tensor_t): The input tensor.
     Returns:
-        np.ndarray: The output tensor after passing through the model.
+        tensor_t: The output tensor after passing through the model.
     """
     ### make sure x has the right shape ###
     if x.shape[1] != model.layers[0].input_dim[0]:
@@ -77,13 +84,13 @@ def call_model(model: Model, x: np.ndarray) -> np.ndarray:
     return x
 
 
-def compute_loss(model: Model, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+def compute_loss(model: Model, y_true: tensor_t, y_pred: tensor_t) -> float:
     """
     Compute the loss of the model.
     Args:
         model (Model): The neural network model.
-        y_true (np.ndarray): The true labels.
-        y_pred (np.ndarray): The predicted labels.
+        y_true (tensor_t): The true labels.
+        y_pred (tensor_t): The predicted labels.
     Returns:
         float: The computed loss.
     """
@@ -110,6 +117,79 @@ def apply_gradients(model: Model, grads_list: list[Gradients]) -> None:
         apple_gradients_to_layer(layer, grads, model.learning_rate)
 
 
+def compute_gradients(
+    model: Model, x_batch: tensor_t, y_batch: tensor_t
+) -> list[Gradients]:
+    """"""
+    ### forward pass to fill the cache ###
+    y_pred: tensor_t = call_model(model, x_batch)
+
+    ### compute loss derivative ###
+    dL_dy: tensor_t = LOSS_DERIVATIVES[model.loss_function](y_batch, y_pred)
+
+    ### prepare for the backward pass ###
+    grads_list: list[Gradients] = []
+    grad_next: tensor_t = dL_dy
+    rev_layers: list[Layer] = model.layers[::-1]
+
+    ### backward pass ###
+    for layer in rev_layers:
+        """
+        Backward pass through a single layer.
+        """
+        ## get the cached values ##
+        x: tensor_t | None = layer.x
+        z: tensor_t | None = layer.z
+
+        ## sanity check ##
+        if x is None or z is None:
+            raise ValueError(
+                f"Layer {layer.name} cache is empty. Forward pass must be called "
+                "before backward pass."
+            )
+
+        ## get the derivative of the activation function ##
+        """
+        dL_dz = dL_dy * activation_derivative(z)
+        dL_dy is the gradient from the next layer
+        """
+        activation_derivative = ACTIVATION_DERIVATIVES[layer.activation]
+        dL_dz: tensor_t = activation_derivative(z) * grad_next
+
+        ## compute the derivative w.r.t. weights ##
+        """
+        dL_dw = x.T dot dL_dz / m (where m is the number of samples) 
+            dimensions: (input_dim, m) dot (m, output_dim) = (input_dim, output_dim) [same as weights]
+        """
+        dL_dw: tensor_t = np.dot(x.T, dL_dz) / x.shape[0]
+
+        ## compute the derivative w.r.t. bias ##
+        """
+        dL_db = sum(dL_dz, axis=0, keepdims=True) / m
+            dimensions: (1, output_dim) [same as bias]
+        """
+        dL_db: tensor_t = np.sum(dL_dz, axis=0, keepdims=True) / x.shape[0]
+
+        ## compute the derivative w.r.t. input ##
+        """
+        dL_dx = dL_dz dot weights.T
+            dimensions: (m, output_dim) dot (output_dim, input_dim) = (m, input_dim) [same as x]
+        """
+        dL_dx: tensor_t = np.dot(dL_dz, layer.weights.T)
+
+        ## store the gradients ##
+        grads: Gradients = Gradients(dW=dL_dw, db=dL_db)
+        grads_list.append(grads)
+
+        ## update grad_next for the next layer ##
+        grad_next = dL_dx
+
+    ### reverse the gradients list to match the layer order ###
+    grads_list.reverse()
+
+    return grads_list
+
+
 def model_to_str(model: Model) -> str:
     """
     Generate a string representation of the model.
@@ -129,31 +209,61 @@ def model_to_str(model: Model) -> str:
 
 
 def main() -> int:
+    def toy_model(x, y):
+        return x ^ y
+
+    X: tensor_t = np.array(
+        [
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 1],
+        ]
+    )
+    y: tensor_t = np.array(
+        [
+            [0],
+            [1],
+            [1],
+            [0],
+        ]
+    )
+
     model: Model = create_model(
         layers=[
             create_layer(
-                input_dim=(3,),
-                output_dim=(400,),
+                input_dim=(2,),
+                output_dim=(3,),
                 activation=ActivationFunction.RELU,
                 name="layer1",
             ),
             create_layer(
-                input_dim=(400,),
+                input_dim=(3,),
                 output_dim=(1,),
                 activation=ActivationFunction.SIGMOID,
                 name="layer2",
             ),
         ],
         loss_function=LossFunction.BCE,
-        learning_rate=0.01,
+        learning_rate=0.1,
     )
-    x: np.ndarray = np.random.randn(4, 3)
-    output: np.ndarray = call_model(model, x)
-    print(f"loss: {compute_loss(model, np.array([[1], [0], [1], [0]]), output)}")
-    # print("Model output:\n", output)
-    # for layer in model.layers:
-    #     print(layer.z)
-    print(model_to_str(model))
+
+    epochs: int = 10000
+    for epoch in range(epochs):
+        # Forward pass
+        y_pred: tensor_t = call_model(model, X)
+
+        # Compute loss
+        loss: float = compute_loss(model, y, y_pred)
+
+        # Compute gradients
+        grads_list: list[Gradients] = compute_gradients(model, X, y)
+
+        # Apply gradients
+        apply_gradients(model, grads_list)
+
+        if epoch % 100 == 0:
+            print(f"Epoch {epoch}, Loss: {loss}")
 
     return 0
 
