@@ -24,6 +24,31 @@ from model import (
 )
 
 
+def plot_history(history: dict[str, list[float]]) -> None:
+    """
+    Plot training and validation loss and accuracy over epochs.
+    Args:
+        history (dict): A dictionary containing training and validation loss and accuracy.
+    Returns:
+        None
+    """
+    plt.subplot(1, 2, 1)
+    plt.plot(history["train_loss"], label="Train Loss")
+    plt.plot(history["val_loss"], label="Validation Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("Training and Validation Loss over Epochs")
+    plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.plot(history["train_accuracy"], label="Train Accuracy")
+    plt.plot(history["val_accuracy"], label="Validation Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.title("Training and Validation Accuracy over Epochs")
+    plt.legend()
+    plt.show()
+
+
 def main() -> int:
     """"""
     ### load the data ###
@@ -93,21 +118,7 @@ def main() -> int:
     )
 
     ### plot the loss curves ###
-    plt.subplot(1, 2, 1)
-    plt.plot(history["train_loss"], label="Train Loss")
-    plt.plot(history["val_loss"], label="Validation Loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.title("Training and Validation Loss over Epochs")
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(history["train_accuracy"], label="Train Accuracy")
-    plt.plot(history["val_accuracy"], label="Validation Accuracy")
-    plt.xlabel("Epochs")
-    plt.ylabel("Accuracy")
-    plt.title("Training and Validation Accuracy over Epochs")
-    plt.legend()
-    plt.show()
+    plot_history(history)
 
     y_test_pred = call_model(model, ts_X)
     test_loss = compute_loss(model, ts_y, y_test_pred)
