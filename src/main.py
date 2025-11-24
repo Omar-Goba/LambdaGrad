@@ -100,7 +100,7 @@ def main() -> int:
     )
 
     ### init optimiser ###
-    minibatch_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
+    sgd_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
     adam_optim = make_adam_optimizer(model=model)
     muon_optim = make_muon_optimizer(model=model)
     optimiser = muon_optim
@@ -129,11 +129,77 @@ def main() -> int:
     )
 
     ### plot the loss curves ###
-    # plot_history(history)
+    plot_history(history)
 
     y_test_pred = call_model(model, ts_X)
     test_loss = compute_loss(model, ts_y, y_test_pred)
     print(f"Test Loss: {test_loss}")
+
+    """
+    experiments:
+      - optimizer: SGD
+        results:
+          - lr_setting: 0
+            early_stopping: 0
+            test_loss: 0.2479
+            is_best: false
+          - lr_setting: 1
+            early_stopping: 0
+            test_loss: 0.2247  # Overall Best Result
+            is_best: true
+          - lr_setting: 0
+            early_stopping: 1
+            test_loss: 0.2720
+            is_best: false
+          - lr_setting: 1
+            early_stopping: 1
+            test_loss: 0.2253
+            is_best: false
+
+      - optimizer: Adam
+        results:
+          - lr_setting: 0
+            early_stopping: 0
+            test_loss: 0.6723  # Best Adam Result
+            is_best: true
+          - lr_setting: 1
+            early_stopping: 0
+            test_loss: 0.6724
+            is_best: false
+          - lr_setting: 0
+            early_stopping: 1
+            test_loss: 0.6726
+            is_best: false
+          - lr_setting: 1
+            early_stopping: 1
+            test_loss: 0.6735
+            is_best: false
+
+      - optimizer: Muon
+        results:
+          - lr_setting: 0
+            early_stopping: 0
+            test_loss: 0.6724
+            is_best: false
+          - lr_setting: 1
+            early_stopping: 0
+            test_loss: 0.6712
+            is_best: false
+          - lr_setting: 0
+            early_stopping: 1
+            test_loss: 0.6719
+            is_best: false
+          - lr_setting: 1
+            early_stopping: 1
+            test_loss: 0.6712  # Best Muon Result (Tied)
+            is_best: true
+
+    best_overall_configuration:
+      optimizer: SGD
+      lr_setting: 1
+      early_stopping: 0
+      test_loss: 0.2247
+    """
 
     return 0
 

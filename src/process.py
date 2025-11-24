@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
-from util import tensor_t, RANDOM_SEED, TARGET_COLUMN
+from util import tensor_t, RNG, TARGET_COLUMN
 
 
 def impute_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -39,21 +39,22 @@ def split(df: pd.DataFrame, ratios: dict[str, float]) -> dict[str, tensor_t]:
         raise ValueError("Ratios must sum to 1.0")
 
     ### shuffle the dataframe ###
-    df = df.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
+    df = df.sample(frac=1, random_state=RNG).reset_index(drop=True)
 
     ### compute the split indices ###
     split_indices: list = []
     cumulative_ratio: float = 0.0
+    split_index: int
     for ratio in ratios.values():
         cumulative_ratio += ratio
-        split_index: int = int(cumulative_ratio * len(df))
+        split_index = int(cumulative_ratio * len(df))
         split_indices.append(split_index)
 
     ### split the dataframe ###
     splits: dict = {}
     previous_index: int = 0
     for i, (split_name, _) in enumerate(ratios.items()):
-        split_index: int = split_indices[i]
+        split_index = split_indices[i]
         split_df: pd.DataFrame = df.iloc[previous_index:split_index]
 
         ### separate features and target ###

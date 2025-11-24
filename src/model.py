@@ -5,6 +5,7 @@ import numpy as np
 ### ~~~ Local IMPORTS ~~~ ###
 from process import batch_data
 from util import (
+    RNG,
     tensor_t,
     optimiser_t,
     LossFunction,
@@ -277,7 +278,7 @@ def train_model(
 
     ### shuffle training data ###
     if do_shuffle:
-        perm: np.ndarray = np.random.permutation(tr_X.shape[0])
+        perm: np.ndarray = RNG.permutation(tr_X.shape[0])
         tr_X = tr_X[perm]
         tr_y = tr_y[perm]
 
