@@ -1,30 +1,18 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
-from dataclasses import dataclass
 import numpy as np
 
 ### ~~~ Local IMPORTS ~~~ ###
-from util import dim_t, tensor_t, ActivationFunction, ACTIVATION_FUNCTIONS
+from util import (
+    dim_t,
+    tensor_t,
+    ActivationFunction,
+    ACTIVATION_FUNCTIONS,
+    Gradients,
+    Layer,
+)
 
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
-@dataclass
-class Layer:
-    name: str
-    input_dim: dim_t
-    output_dim: dim_t
-    activation: ActivationFunction
-    weights: tensor_t
-    bias: tensor_t
-    x: tensor_t | None
-    z: tensor_t | None
-
-
-@dataclass
-class Gradients:
-    dW: tensor_t
-    db: tensor_t
-
-
 def create_layer(
     input_dim: dim_t,
     output_dim: dim_t,
@@ -136,7 +124,7 @@ def main() -> int:
         activation=ActivationFunction.RELU,
         name="hidden_layer_1",
     )
-    output: tensor_t = call_layer(layer, x)
+    _: tensor_t = call_layer(layer, x)
     grads = Gradients(
         dW=np.random.randn(features, outputs),
         db=np.random.randn(1, outputs),

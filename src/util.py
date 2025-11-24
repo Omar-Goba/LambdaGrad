@@ -1,14 +1,16 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
 from sklearn.datasets import load_breast_cancer
+from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
 import numpy as np
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
-from typing import Callable, TypeAlias
+from typing import Callable, TypeAlias, Any
 
 tensor_t: TypeAlias = np.ndarray
 dim_t: TypeAlias = tuple[int, ...]
+callback: TypeAlias = Callable[["State"], None]
 
 
 class ActivationFunction(str, Enum):
@@ -25,6 +27,50 @@ class LossFunction(str, Enum):
 
 class AccuracyMetric(str, Enum):
     BINARY_ACCURACY = "binary_accuracy"
+
+
+@dataclass
+class Layer:
+    name: str
+    input_dim: dim_t
+    output_dim: dim_t
+    activation: ActivationFunction
+    weights: tensor_t
+    bias: tensor_t
+    x: tensor_t | None
+    z: tensor_t | None
+
+
+@dataclass
+class Gradients:
+    dW: tensor_t
+    db: tensor_t
+
+
+@dataclass
+class Model:
+    layers: list[Layer]
+    loss_function: LossFunction
+    learning_rate: float
+    accuracy_function: AccuracyMetric = AccuracyMetric.BINARY_ACCURACY
+
+
+@dataclass
+class History:
+    train_loss: list[float]
+    val_loss: list[float]
+    train_accuracy: list[float]
+    val_accuracy: list[float]
+
+
+@dataclass
+class State:
+    epoch: int
+    model: Any
+    history: History
+    train_loss: float
+    val_loss: float
+    stop_training: bool = False
 
 
 ### ~~~ STATE MANAGEMENT ~~~ ###

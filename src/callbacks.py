@@ -1,23 +1,12 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
-from typing import Callable, Any
-from dataclasses import dataclass
+# None
 
 ### ~~~ LOCAL IMPORTS ~~~ ###
+from util import State, callback, Model
 
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
-@dataclass
-class State:
-    epoch: int
-    model: Any
-    history: dict[str, list[float]]
-    train_loss: float
-    val_loss: float
-    stop_training: bool = False
-
-
-Callback = Callable[[State], None]
-
+# None
 
 ### ~~~ STATE MANAGEMENT ~~~ ###
 # None
@@ -26,7 +15,7 @@ Callback = Callable[[State], None]
 def make_early_stopping_callback(
     patience: int = 5,
     min_delta: float = 0.0,
-) -> Callback:
+) -> callback:
     """
     Create an early stopping callback based on validation loss.
     Args:
@@ -63,7 +52,7 @@ def make_lr_annealing_callback(
     patience: int = 5,
     min_delta: float = 0.0,
     min_lr: float = 1e-5,
-) -> Callback:
+) -> callback:
     """
     Reduce learning rate by `factor` if validation loss does not improve
     for `patience` epochs.
@@ -82,7 +71,7 @@ def make_lr_annealing_callback(
     def callback(state: State) -> None:
         nonlocal best_val_loss, epochs_without_improve
 
-        model: Any = state.model
+        model: Model = state.model
         current_val_loss = state.val_loss
 
         ### check improvement ###

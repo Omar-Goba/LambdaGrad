@@ -1,5 +1,4 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
-from dataclasses import dataclass
 from tqdm import trange
 import numpy as np
 
@@ -13,6 +12,8 @@ from util import (
     ACTIVATION_DERIVATIVES,
     AccuracyMetric,
     ACCURACY_METRICS,
+    Model,
+    History,
 )
 from layer import (
     Layer,
@@ -26,12 +27,6 @@ from callbacks import Callback, State
 
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
-@dataclass
-class Model:
-    layers: list[Layer]
-    loss_function: LossFunction
-    learning_rate: float
-    accuracy_function: AccuracyMetric = AccuracyMetric.BINARY_ACCURACY
 
 
 def create_model(
@@ -62,6 +57,7 @@ def create_model(
         layers=layers,
         loss_function=loss_function,
         learning_rate=learning_rate,
+        accuracy_function=accuracy_function,
     )
 
     return model
@@ -251,15 +247,16 @@ def train_model(
     val_data: tuple[tensor_t, tensor_t],
     epochs: int,
     callbacks: list[Callback] = [],
-) -> dict[str, list[float]]:
+) -> History:
     """"""
     ### init history ###
-    history = {
-        "train_loss": [],
-        "val_loss": [],
-        "train_accuracy": [],
-        "val_accuracy": [],
-    }
+    history: History = History(
+        train_loss=[],
+        val_loss=[],
+        train_accuracy=[],
+        val_accuracy=[],
+    )
+
     ### unpack data ###
     tr_X, tr_y = train_data
     val_X, val_y = val_data
@@ -298,16 +295,16 @@ def train_model(
 
         ### average history over all batches ###
         average_loss = current_loss / len(tr_X)
-        history["train_loss"].append(average_loss)
+        history.train_loss.append(average_loss)
         average_accuracy = current_accuracy / len(tr_X)
-        history["train_accuracy"].append(average_accuracy)
+        history.train_accuracy.append(average_accuracy)
 
         ### validation loss ###
         y_val_pred = call_model(model, val_X)
         val_loss = compute_loss(model, val_y, y_val_pred)
-        history["val_loss"].append(val_loss)
+        history.val_loss.append(val_loss)
         val_accuracy = comptute_accuracy(model, val_y, y_val_pred)
-        history["val_accuracy"].append(val_accuracy)
+        history.val_accuracy.append(val_accuracy)
 
         ### Construct state for callbacks ###
         state = State(
@@ -330,9 +327,6 @@ def train_model(
 
 
 def main() -> int:
-    def toy_model(x, y):
-        return x ^ y
-
     X: tensor_t = np.array(
         [
             [0, 0],
