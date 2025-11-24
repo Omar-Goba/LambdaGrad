@@ -13,7 +13,7 @@ from util import (
 )
 from explore import feature_engineering
 from process import impute_data, split, batch_data
-
+from callbacks import make_early_stopping_callback, make_lr_annealing_callback
 from model import (
     Model,
     call_model,
@@ -21,10 +21,6 @@ from model import (
     compute_loss,
     train_model,
 )
-
-
-### ~~~ STATE MANAGEMENT ~~~ ###
-# None
 
 
 def main() -> int:
@@ -73,12 +69,25 @@ def main() -> int:
         loss_function=LossFunction.BCE,
     )
 
+    ### set up callbacks ###
+    early_stopping_callback = make_early_stopping_callback(
+        patience=10,
+        min_delta=1e-4,
+    )
+    lr_annealing_callback = make_lr_annealing_callback(
+        factor=0.5,
+        patience=3,
+        min_delta=1e-4,
+        min_lr=1e-5,
+    )
+
     ### train the model ###
     history = train_model(
         model,
         (tr_X_batches, tr_y_batches),
         (vl_X, vl_y),
         epochs=EPOCHS,
+        callbacks=[early_stopping_callback, lr_annealing_callback],
     )
 
     ### plot the loss curves ###

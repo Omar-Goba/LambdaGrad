@@ -20,6 +20,7 @@ from layer import (
     apple_gradients_to_layer,
     layer_to_str,
 )
+from callbacks import Callback, State
 
 
 ### ~~~ TYPE DEFINITIONS ~~~ ###
@@ -229,6 +230,7 @@ def train_model(
     train_data: tuple[tensor_t, tensor_t],
     val_data: tuple[tensor_t, tensor_t],
     epochs: int,
+    callbacks: list[Callback] = [],
 ) -> dict[str, list[float]]:
     """"""
     ### init history ###
@@ -274,6 +276,23 @@ def train_model(
         y_val_pred = call_model(model, val_X)
         val_loss = compute_loss(model, val_y, y_val_pred)
         history["val_loss"].append(val_loss)
+
+        ### Construct state for callbacks ###
+        state = State(
+            epoch=epochs,
+            model=model,
+            history=history,
+            train_loss=average_loss,
+            val_loss=val_loss,
+        )
+
+        ### call callbacks ###
+        for callback in callbacks:
+            callback(state)
+
+        ### check for early stopping ###
+        if state.stop_training:
+            break
 
     return history
 
