@@ -16,7 +16,11 @@ from util import (
 from explore import feature_engineering
 from process import impute_data, split
 from callbacks import make_early_stopping_callback, make_lr_annealing_callback
-from optimiser import make_minibatch_sgd_optimiser, make_adam_optimizer
+from optimiser import (
+    make_minibatch_sgd_optimiser,
+    make_adam_optimizer,
+    make_muon_optimizer,
+)
 from model import (
     Model,
     call_model,
@@ -98,7 +102,8 @@ def main() -> int:
     ### init optimiser ###
     minibatch_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
     adam_optim = make_adam_optimizer(model=model)
-    optimiser = minibatch_optim
+    muon_optim = make_muon_optimizer(model=model)
+    optimiser = muon_optim
 
     ### set up callbacks ###
     early_stopping_callback = make_early_stopping_callback(
@@ -120,7 +125,7 @@ def main() -> int:
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
         optimiser=optimiser,
-        # callbacks=[early_stopping_callback, lr_annealing_callback],
+        callbacks=[early_stopping_callback, lr_annealing_callback],
     )
 
     ### plot the loss curves ###
