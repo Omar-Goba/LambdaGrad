@@ -98,7 +98,7 @@ def main() -> int:
     ### init optimiser ###
     minibatch_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
     adam_optim = make_adam_optimizer(model=model)
-    optimiser = adam_optim
+    optimiser = minibatch_optim
 
     ### set up callbacks ###
     early_stopping_callback = make_early_stopping_callback(
@@ -120,11 +120,11 @@ def main() -> int:
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
         optimiser=optimiser,
-        callbacks=[early_stopping_callback, lr_annealing_callback],
+        # callbacks=[early_stopping_callback, lr_annealing_callback],
     )
 
     ### plot the loss curves ###
-    plot_history(history)
+    # plot_history(history)
 
     y_test_pred = call_model(model, ts_X)
     test_loss = compute_loss(model, ts_y, y_test_pred)

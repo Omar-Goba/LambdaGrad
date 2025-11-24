@@ -86,6 +86,8 @@ BATCH_SIZE: int = 100
 EPOCHS: int = 10000
 LEARNING_RATE: float = 0.1
 
+RNG = np.random.default_rng(RANDOM_SEED)
+
 
 def load_data() -> pd.DataFrame:
     """

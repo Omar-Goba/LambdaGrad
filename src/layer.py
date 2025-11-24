@@ -5,6 +5,7 @@ import numpy as np
 from util import (
     dim_t,
     tensor_t,
+    RNG,
     ActivationFunction,
     ACTIVATION_FUNCTIONS,
     Gradients,
@@ -31,7 +32,7 @@ def create_layer(
         Layer: The created neural network layer.
     """
     ### initialize weights and bias ###
-    weights: tensor_t = np.random.randn(input_dim[0], output_dim[0]) * np.sqrt(
+    weights: tensor_t = RNG.standard_normal((input_dim[0], output_dim[0])) * np.sqrt(
         2.0 / input_dim[0]
     )
     bias: tensor_t = np.zeros((1, output_dim[0]))
