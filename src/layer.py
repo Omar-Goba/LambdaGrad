@@ -13,7 +13,6 @@ from util import (
 )
 
 
-### ~~~ TYPE DEFINITIONS ~~~ ###
 def create_layer(
     input_dim: dim_t,
     output_dim: dim_t,
@@ -86,33 +85,6 @@ def layer_to_str(layer: Layer) -> str:
         f"Layer(name={layer.name}, input_dim={layer.input_dim}, "
         f"output_dim={layer.output_dim}, activation={layer.activation})"
     )
-
-
-def apple_gradients_to_layer(
-    layer: Layer, grads: Gradients, learning_rate: float
-) -> None:
-    """
-    Update the layer's weights and bias using the provided gradients and learning rate.
-    Args:
-        layer (Layer): The neural network layer.
-        grads (Gradients): The gradients for weights and bias.
-        learning_rate (float): The learning rate for the update.
-    """
-    ### make sure shapes match ###
-    if layer.weights.shape != grads.dW.shape:
-        raise ValueError(
-            f"Weight gradient shape {grads.dW.shape} does not match layer weight "
-            f"shape {layer.weights.shape}"
-        )
-    if layer.bias.shape != grads.db.shape:
-        raise ValueError(
-            f"Bias gradient shape {grads.db.shape} does not match layer bias "
-            f"shape {layer.bias.shape}"
-        )
-
-    ### update weights and bias ###
-    layer.weights -= learning_rate * grads.dW
-    layer.bias -= learning_rate * grads.db
 
 
 def main() -> int:
