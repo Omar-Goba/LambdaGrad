@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="560" viewBox="0 0 1400 560" role="img" aria-labelledby="title desc">
+  <title id="title">LambdaGrad training flow</title>
+  <desc id="desc">Data moves through preprocessing, a forward pass, loss, backpropagation, gradients, an optimiser, and a parameter update. Optimiser closures retain Adam and Muon state.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080c18" />
+      <stop offset="1" stop-color="#11162a" />
+    </linearGradient>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22d3ee" />
+    </marker>
+    <marker id="arrow-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2dd4bf" />
+    </marker>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#020617" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <rect width="1400" height="560" rx="26" fill="url(#background)" />
+  <rect x="1" y="1" width="1398" height="558" rx="25" fill="none" stroke="#334155" stroke-opacity="0.65" stroke-width="2" />
+
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="68" y="62" fill="#f8fafc" font-size="27" font-weight="700">One explicit training loop</text>
+    <text x="68" y="91" fill="#64748b" font-size="14" font-weight="700" letter-spacing="2.6">DATA, DERIVATIVES, AND STATE STAY VISIBLE</text>
+
+    <g filter="url(#shadow)">
+      <g>
+        <rect x="68" y="130" width="180" height="84" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-opacity="0.72" stroke-width="2" />
+        <text x="158" y="166" fill="#67e8f9" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">INPUT</text>
+        <text x="158" y="192" fill="#f1f5f9" font-size="20" font-weight="650" text-anchor="middle">Dataset</text>
+      </g>
+      <g>
+        <rect x="294" y="130" width="220" height="84" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-opacity="0.72" stroke-width="2" />
+        <text x="404" y="166" fill="#67e8f9" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">PIPELINE</text>
+        <text x="404" y="192" fill="#f1f5f9" font-size="20" font-weight="650" text-anchor="middle">Preprocessing</text>
+      </g>
+      <g>
+        <rect x="560" y="130" width="250" height="84" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-width="2.4" />
+        <text x="685" y="166" fill="#67e8f9" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">LAYERS</text>
+        <text x="685" y="192" fill="#f1f5f9" font-size="20" font-weight="650" text-anchor="middle">Forward pass</text>
+      </g>
+      <g>
+        <rect x="856" y="130" width="180" height="84" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-opacity="0.72" stroke-width="2" />
+        <text x="946" y="166" fill="#67e8f9" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">OBJECTIVE</text>
+        <text x="946" y="192" fill="#f1f5f9" font-size="20" font-weight="650" text-anchor="middle">Loss</text>
+      </g>
+
+      <g>
+        <rect x="944" y="294" width="246" height="84" rx="14" fill="#17122b" stroke="#a78bfa" stroke-width="2" />
+        <text x="1067" y="330" fill="#c4b5fd" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">CHAIN RULE</text>
+        <text x="1067" y="356" fill="#f5f3ff" font-size="20" font-weight="650" text-anchor="middle">Backpropagation</text>
+      </g>
+      <g>
+        <rect x="681" y="294" width="215" height="84" rx="14" fill="#17122b" stroke="#a78bfa" stroke-width="2" />
+        <text x="788" y="330" fill="#c4b5fd" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">EXPLICIT DATA</text>
+        <text x="788" y="356" fill="#f5f3ff" font-size="20" font-weight="650" text-anchor="middle">Gradients</text>
+      </g>
+      <g>
+        <rect x="382" y="294" width="251" height="84" rx="14" fill="#121b28" stroke="#2dd4bf" stroke-width="2.4" />
+        <text x="507" y="330" fill="#5eead4" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">CLOSURE</text>
+        <text x="507" y="356" fill="#f0fdfa" font-size="20" font-weight="650" text-anchor="middle">Optimiser</text>
+      </g>
+      <g>
+        <rect x="68" y="294" width="266" height="84" rx="14" fill="#121b28" stroke="#2dd4bf" stroke-width="2" />
+        <text x="201" y="330" fill="#5eead4" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.5">IN-PLACE</text>
+        <text x="201" y="356" fill="#f0fdfa" font-size="20" font-weight="650" text-anchor="middle">Parameter update</text>
+      </g>
+    </g>
+
+    <g fill="none" stroke-linecap="round" stroke-width="2.6">
+      <path d="M 248 172 H 284" stroke="#22d3ee" marker-end="url(#arrow-cyan)" />
+      <path d="M 514 172 H 550" stroke="#22d3ee" marker-end="url(#arrow-cyan)" />
+      <path d="M 810 172 H 846" stroke="#22d3ee" marker-end="url(#arrow-cyan)" />
+      <path d="M 946 214 C 946 249, 1067 246, 1067 284" stroke="#a78bfa" marker-end="url(#arrow-violet)" />
+      <path d="M 944 336 H 906" stroke="#a78bfa" marker-end="url(#arrow-violet)" />
+      <path d="M 681 336 H 643" stroke="#2dd4bf" marker-end="url(#arrow-green)" />
+      <path d="M 382 336 H 344" stroke="#2dd4bf" marker-end="url(#arrow-green)" />
+      <path d="M 201 294 C 201 244, 527 252, 640 214" stroke="#2dd4bf" marker-end="url(#arrow-green)" />
+    </g>
+
+    <text x="382" y="426" fill="#64748b" font-size="13" font-weight="700" letter-spacing="1.5">OPTIMISER STATE</text>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">
+      <g>
+        <rect x="382" y="447" width="104" height="43" rx="21" fill="#0f172a" stroke="#475569" />
+        <text x="434" y="474" fill="#cbd5e1" text-anchor="middle">SGD</text>
+      </g>
+      <g>
+        <rect x="498" y="447" width="162" height="43" rx="21" fill="#0f172a" stroke="#2dd4bf" stroke-opacity="0.7" />
+        <text x="579" y="474" fill="#99f6e4" text-anchor="middle">Adam  m, v</text>
+      </g>
+      <g>
+        <rect x="672" y="447" width="232" height="43" rx="21" fill="#0f172a" stroke="#a78bfa" stroke-opacity="0.8" />
+        <text x="788" y="474" fill="#ddd6fe" text-anchor="middle">Muon  momentum + NS</text>
+      </g>
+    </g>
+    <path d="M 507 437 V 389" fill="none" stroke="#2dd4bf" stroke-opacity="0.7" stroke-width="2" stroke-dasharray="5 6" marker-end="url(#arrow-green)" />
+  </g>
+</svg>

@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="480" viewBox="0 0 1600 480" role="img" aria-labelledby="title desc">
+  <title id="title">LambdaGrad</title>
+  <desc id="desc">Neural networks composed from functions, illustrated with a computation graph and matrix motifs.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070b16" />
+      <stop offset="1" stop-color="#10142a" />
+    </linearGradient>
+    <radialGradient id="cyan-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="violet-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.2" />
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#94a3b8" stroke-opacity="0.06" />
+    </pattern>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22d3ee" />
+    </marker>
+    <marker id="arrow-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa" />
+    </marker>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#020617" flood-opacity="0.55" />
+    </filter>
+  </defs>
+
+  <rect width="1600" height="480" rx="28" fill="url(#background)" />
+  <rect width="1600" height="480" rx="28" fill="url(#grid)" />
+  <ellipse cx="1190" cy="185" rx="430" ry="330" fill="url(#cyan-glow)" />
+  <ellipse cx="1435" cy="410" rx="360" ry="260" fill="url(#violet-glow)" />
+
+  <g fill="none" stroke="#64748b" stroke-opacity="0.14">
+    <path d="M 80 380 H 680" />
+    <path d="M 80 396 H 590" />
+    <path d="M 80 412 H 520" />
+  </g>
+
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="104" y="94" fill="#67e8f9" font-size="19" font-weight="700" letter-spacing="4">FUNCTION-FIRST / NUMPY</text>
+    <text x="96" y="237" fill="#f8fafc" font-size="126" font-weight="760" letter-spacing="-7">&#955;Grad</text>
+    <text x="105" y="304" fill="#cbd5e1" font-size="31" font-weight="430" letter-spacing="0.4">Neural networks, composed from functions</text>
+    <text x="106" y="351" fill="#64748b" font-size="19" letter-spacing="1.2">FORWARD  /  BACKWARD  /  OPTIMISE</text>
+  </g>
+
+  <g filter="url(#soft-shadow)">
+    <path d="M 958 162 C 1028 162, 1047 119, 1114 119" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+    <path d="M 958 162 C 1028 162, 1047 231, 1114 231" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+    <path d="M 1186 119 C 1250 119, 1258 176, 1312 176" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+    <path d="M 1186 231 C 1250 231, 1258 176, 1312 176" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+    <path d="M 1384 176 C 1438 176, 1450 244, 1477 244" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+
+    <path d="M 1480 302 C 1387 384, 1225 385, 1135 313" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="8 8" marker-end="url(#arrow-violet)" />
+    <path d="M 1121 299 C 1059 354, 985 340, 940 252" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="8 8" marker-end="url(#arrow-violet)" />
+
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="23" font-weight="700" text-anchor="middle">
+      <g>
+        <circle cx="922" cy="162" r="36" fill="#0f172a" stroke="#22d3ee" stroke-width="2.5" />
+        <text x="922" y="170" fill="#e2e8f0">x</text>
+      </g>
+      <g>
+        <circle cx="1150" cy="119" r="36" fill="#0f172a" stroke="#22d3ee" stroke-width="2.5" />
+        <text x="1150" y="127" fill="#e2e8f0">W</text>
+      </g>
+      <g>
+        <circle cx="1150" cy="231" r="36" fill="#0f172a" stroke="#22d3ee" stroke-width="2.5" />
+        <text x="1150" y="239" fill="#e2e8f0">b</text>
+      </g>
+      <g>
+        <circle cx="1348" cy="176" r="36" fill="#0f172a" stroke="#22d3ee" stroke-width="2.5" />
+        <text x="1348" y="184" fill="#e2e8f0">z</text>
+      </g>
+      <g>
+        <circle cx="1495" cy="272" r="36" fill="#0f172a" stroke="#22d3ee" stroke-width="2.5" />
+        <text x="1495" y="280" fill="#e2e8f0">L</text>
+      </g>
+      <g>
+        <circle cx="1106" cy="290" r="32" fill="#17122b" stroke="#a78bfa" stroke-width="2.5" />
+        <text x="1106" y="298" fill="#ddd6fe">dW</text>
+      </g>
+      <g>
+        <circle cx="921" cy="220" r="32" fill="#17122b" stroke="#a78bfa" stroke-width="2.5" />
+        <text x="921" y="228" fill="#ddd6fe">db</text>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(1264 350)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#94a3b8" opacity="0.7">
+    <path d="M 0 0 H -12 V 78 H 0 M 184 0 H 196 V 78 H 184" fill="none" stroke="#64748b" stroke-width="2" />
+    <text x="17" y="23">0.42</text><text x="79" y="23">-0.18</text><text x="149" y="23">0.73</text>
+    <text x="17" y="49">0.09</text><text x="79" y="49">0.61</text><text x="149" y="49">-0.27</text>
+    <text x="17" y="75">-0.54</text><text x="79" y="75">0.12</text><text x="149" y="75">0.36</text>
+  </g>
+
+  <rect x="1" y="1" width="1598" height="478" rx="27" fill="none" stroke="#334155" stroke-opacity="0.55" stroke-width="2" />
+</svg>
