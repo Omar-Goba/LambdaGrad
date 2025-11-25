@@ -64,7 +64,7 @@ def main() -> int:
     df = impute_data(df)
 
     ### feature engineering ###
-    # feature_engineering(df)
+    feature_engineering(df)
 
     ### split the data ###
     splits = split(df, RATIOS)
