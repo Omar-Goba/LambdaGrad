@@ -18,14 +18,7 @@ from util import (
     Model,
     History,
 )
-from layer import (
-    Layer,
-    Gradients,
-    create_layer,
-    call_layer,
-    apple_gradients_to_layer,
-    layer_to_str,
-)
+from layer import Layer, Gradients, call_layer, layer_to_str, create_layer
 from callbacks import callback_t, State
 
 
@@ -233,6 +226,7 @@ def train_model(
     optimiser: optimiser_t,
     callbacks: list[callback_t] = [],
     do_shuffle: bool = True,
+    verbose: bool = True,
 ) -> History:
     """
     This function trains the model using whatever optimiser is passed to it.
@@ -286,7 +280,7 @@ def train_model(
     tr_X_batches, tr_y_batches = batch_data(tr_X, tr_y, batch_size)
 
     ### training loop ###
-    for _ in trange(epochs, desc="Training Epochs"):
+    for _ in trange(epochs, desc="Training Epochs", disable=not verbose):
         current_loss = 0.0
         current_accuracy = 0.0
         for X_batch, y_batch in zip(tr_X_batches, tr_y_batches):

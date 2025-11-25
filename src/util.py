@@ -1,5 +1,4 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
-from sklearn.datasets import load_breast_cancer
 from ucimlrepo import fetch_ucirepo
 from dataclasses import dataclass
 from enum import Enum
@@ -13,6 +12,11 @@ tensor_t: TypeAlias = np.ndarray
 dim_t: TypeAlias = tuple[int, ...]
 callback_t: TypeAlias = Callable[["State"], None]
 optimiser_t: TypeAlias = Callable[["Model", list["Gradients"]], None]
+
+
+class FeatureSelectionMethod(str, Enum):
+    CORRELATION = "correlation"
+    MUTUAL_INFORMATION = "mutual_information"
 
 
 class ActivationFunction(str, Enum):
@@ -90,7 +94,7 @@ LEARNING_RATE: float = 0.01
 RNG = np.random.default_rng(RANDOM_SEED)
 
 
-def load_data() -> pd.DataFrame:
+def load_data(from_cache: bool = False) -> pd.DataFrame:
     """
     Dataset Selection: Breast Cancer Wisconsin (Diagnostic) (Classification)
     Args:
@@ -99,13 +103,18 @@ def load_data() -> pd.DataFrame:
         pd.DataFrame: The breast cancer dataset with features and target.
     """
     ### load up the data ###
-    data: pd.DataFrame = fetch_ucirepo(id=891).data
+    if from_cache:
+        data = pd.read_csv("dbs/diabetes.csv")
+        df = pd.DataFrame(data)
+        df.rename(columns={"Diabetes_binary": TARGET_COLUMN}, inplace=True)
+    else:
+        data = fetch_ucirepo(id=891).data
 
-    ### put it into a df ###
-    df = pd.DataFrame(data.features)
+        ### put it into a df ###
+        df = pd.DataFrame(data.features)
 
-    ### add the target ###
-    df["target"] = data.targets
+        ### add the target ###
+        df[TARGET_COLUMN] = data.targets
 
     return df
 

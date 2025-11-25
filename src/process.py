@@ -71,9 +71,11 @@ def normalize_data(df: pd.DataFrame) -> pd.DataFrame:
     df_copy = df.copy()
 
     ### get all numeric columns ###
-    numeric_cols: list[str] = df_copy.select_dtypes(
-        include=[np.number]
-    ).columns.tolist()
+    numeric_cols: list[str] = [
+        col
+        for col in df_copy.select_dtypes(include=[np.number]).columns
+        if df_copy[col].nunique() > 4
+    ]
 
     ### normalize each numeric column ###
     for col in numeric_cols:
@@ -124,6 +126,11 @@ def feature_selection(
     """
     ### copy the df to avoid annoying warnings ###
     df_copy = df.copy()
+
+    ### drop any feature that is constant ###
+    nunique = df_copy.nunique()
+    constant_features = nunique[nunique <= 1].index.tolist()
+    df_copy.drop(columns=constant_features, inplace=True)
 
     def mutual_information_discrete(x: pd.Series, y: pd.Series) -> float:
         """
@@ -192,18 +199,20 @@ def feature_selection(
             df_copy.drop(columns=[TARGET_COLUMN])  # exclude target from features
             .corrwith(df_copy[TARGET_COLUMN])  # Pearson corr with target
             .abs()  # use absolute correlation
+            .fillna(
+                0
+            )  # fill NaNs with 0 correlation (this is needed as some features may be constant)
             .sort_values(ascending=False)  # sort descending
         )
 
         ### keep top 80% features ###
-        num_keep = int(0.8 * len(corr_scores))
+        num_keep = int(0.9 * len(corr_scores))
         threshold = corr_scores.iloc[num_keep - 1]
 
-        selected_features = corr_scores[corr_scores >= threshold].index.tolist()
+        selected_features = corr_scores[corr_scores > threshold].index.tolist()
 
         ### final filtered DF ###
         df_filtered = df_copy[selected_features + [TARGET_COLUMN]]
-        breakpoint()
 
         return df_filtered
 
