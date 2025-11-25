@@ -14,7 +14,7 @@ from util import (
     AccuracyMetric,
 )
 from explore import feature_engineering
-from process import impute_data, split
+from process import process_data, split
 from callbacks import make_early_stopping_callback, make_lr_annealing_callback
 from optimiser import (
     make_minibatch_sgd_optimiser,
@@ -58,13 +58,13 @@ def plot_history(history: History) -> None:
 def main() -> int:
     """"""
     ### load the data ###
-    df = load_data()
+    df = load_data(from_cache=True)
 
-    ### impute the data ###
-    df = impute_data(df)
+    ### process the data ###
+    df = process_data(df)
 
     ### feature engineering ###
-    feature_engineering(df)
+    # feature_engineering(df)
 
     ### split the data ###
     splits = split(df, RATIOS)
