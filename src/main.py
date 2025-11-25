@@ -103,7 +103,7 @@ def main() -> int:
     sgd_optim = make_minibatch_sgd_optimiser(batch_size=BATCH_SIZE)
     adam_optim = make_adam_optimizer(model=model)
     muon_optim = make_muon_optimizer(model=model)
-    optimiser = muon_optim
+    optimiser = adam_optim
 
     ### set up callbacks ###
     early_stopping_callback = make_early_stopping_callback(

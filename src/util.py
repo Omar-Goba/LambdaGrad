@@ -1,5 +1,6 @@
 ### ~~~ GLOBAL IMPORTS ~~~ ###
 from sklearn.datasets import load_breast_cancer
+from ucimlrepo import fetch_ucirepo
 from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
@@ -82,9 +83,9 @@ RATIOS: dict[str, float] = {
     "validation": 0.15,
     "test": 0.15,
 }
-BATCH_SIZE: int = 100
-EPOCHS: int = 10000
-LEARNING_RATE: float = 0.1
+BATCH_SIZE: int = 320
+EPOCHS: int = 1000
+LEARNING_RATE: float = 0.01
 
 RNG = np.random.default_rng(RANDOM_SEED)
 
@@ -98,13 +99,13 @@ def load_data() -> pd.DataFrame:
         pd.DataFrame: The breast cancer dataset with features and target.
     """
     ### load up the data ###
-    data: pd.DataFrame = load_breast_cancer()  # type: ignore
+    data: pd.DataFrame = fetch_ucirepo(id=891).data
 
     ### put it into a df ###
-    df = pd.DataFrame(data.data, columns=data.feature_names)
+    df = pd.DataFrame(data.features)
 
     ### add the target ###
-    df["target"] = data.target
+    df["target"] = data.targets
 
     return df
 
