@@ -4,43 +4,23 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
+### ~~~ STATE DEFINITIONS ~~~ ###
+sns.set(style="whitegrid")
 
-def feature_engineering(df: pd.DataFrame) -> int:
+
+def show_feature_summary(df: pd.DataFrame) -> None:
     """
-    Perform feature exploration, visualization, and preprocessing on the input dataset.
-    This function fulfills the following tasks:
-    **1. Feature Identification & Summary (Req. 2.1)**
+    1. Feature Identification & Summary (Req. 2.1)
         - Generates a detailed summary table for all features, including:
           data types, total/unique values, missing values, sample values,
           min/max, mean, median, variance, and standard deviation.
         - Prints the summary to the console.
-    **2. Visual Data Exploration (Req. 2.2)**
-        - Histograms for all non-target features.
-        - Scatter plots for selected feature pairs, colored by target class.
-        - Correlation heatmap using Pearson correlations.
-        - Box plots of all numerical features to reveal distribution shape and outliers.
-    **3. Statistical Characterization (Req. 2.4)**
-        - Computes extended descriptive statistics for all numerical features
-          (count, mean, median, std, variance, min, max, range).
-        - Prints the resulting statistics table.
     Args:
         df : pd.DataFrame
-            The raw dataset, expected to include a column named "target".
-            Whether to generate and display visualizations. Default is True.
+            The raw dataset.
     Returns:
-        int: Status code (0 for success).
+        None
     """
-    ############################################################
-    ### Requirement 2.1: Features Identification and Summary ###
-    ############################################################
-
-    ### copy the df to avoid annoying warnings ###
-    df_copy = df.copy()
-
-    ### set up the seaborn ###
-    sns.set(style="whitegrid")
-
-    ### Enhanced Feature Summary Table ###
     feature_summary = pd.DataFrame(
         {
             "Feature": df.columns,
@@ -62,12 +42,24 @@ def feature_engineering(df: pd.DataFrame) -> int:
     print("Enhanced Feature Summary Table:")
     print(feature_summary)
 
-    ################################################
-    ### Requirement 2.2: Visual Data Exploration ###
-    ################################################
+    return None
 
+
+def show_visualizations(df: pd.DataFrame) -> None:
+    """
+    Generate and display visualizations for the dataset.
+        - Histograms for all non-target features.
+        - Scatter plots for selected feature pairs, colored by target class.
+        - Correlation heatmap using Pearson correlations.
+        - Box plots of all numerical features to reveal distribution shape and outliers.
+    Args:
+        df : pd.DataFrame
+            The raw dataset.
+    Returns:
+        None
+    """
     ### drop the target for visualization purposes ###
-    df_features = df_copy.drop(columns="target")  # Exclude target for histograms
+    df_features = df.drop(columns="target")
 
     #### 1. Histograms for all features ####
     df_features.hist(
@@ -103,7 +95,7 @@ def feature_engineering(df: pd.DataFrame) -> int:
 
     ### 4. Box Plots for All Numeric Features ###
     ## Selecting numeric columns (all features except target) ##
-    numerical_cols = df_copy.drop(columns="target").columns
+    numerical_cols = df.drop(columns="target").columns
     n_plots = len(numerical_cols)  # total features
     n_cols = 5  # number of columns in grid
     n_rows = int(np.ceil(n_plots / n_cols))  # number of rows needed
@@ -114,7 +106,7 @@ def feature_engineering(df: pd.DataFrame) -> int:
     ## Looping through each numeric feature and create boxplot ##
     for idx, col in enumerate(numerical_cols):
         axes[idx].boxplot(
-            df_copy[col].dropna(),
+            df[col].dropna(),
             vert=True,
             patch_artist=True,
             boxprops=dict(facecolor="lightblue", alpha=0.7),
@@ -131,12 +123,16 @@ def feature_engineering(df: pd.DataFrame) -> int:
     plt.tight_layout()
     plt.show()
 
-    #######################################################################
-    ### Requirement 2.3: Statistical Characterization of Numerical Data ###
-    #######################################################################
 
+def show_statistical_characterization(df: pd.DataFrame) -> None:
+    """
+    3. Statistical Characterization (Req. 2.4)
+        - Computes extended descriptive statistics for all numerical features
+          (count, mean, median, std, variance, min, max, range).
+        - Prints the resulting statistics table.
+    """
     ### Select numeric features (exclude target) ###
-    numeric_features = df_copy.drop(columns="target")
+    numeric_features = df.drop(columns="target")
 
     ### Compute descriptive statistics ###
     stats_summary = numeric_features.describe().T
@@ -157,5 +153,44 @@ def feature_engineering(df: pd.DataFrame) -> int:
 
     print("\nStatistical Characterization of Numerical Data:")
     print(stats_summary)
+
+    return None
+
+
+def feature_engineering(df: pd.DataFrame) -> int:
+    """
+    Perform feature exploration, visualization, and preprocessing on the input dataset.
+    This function fulfills the following tasks:
+    **1. Feature Identification & Summary (Req. 2.1)**
+        - Generates a detailed summary table for all features, including:
+          data types, total/unique values, missing values, sample values,
+          min/max, mean, median, variance, and standard deviation.
+        - Prints the summary to the console.
+    **2. Visual Data Exploration (Req. 2.2)**
+        - Histograms for all non-target features.
+        - Scatter plots for selected feature pairs, colored by target class.
+        - Correlation heatmap using Pearson correlations.
+        - Box plots of all numerical features to reveal distribution shape and outliers.
+    **3. Statistical Characterization (Req. 2.4)**
+        - Computes extended descriptive statistics for all numerical features
+          (count, mean, median, std, variance, min, max, range).
+        - Prints the resulting statistics table.
+    Args:
+        df : pd.DataFrame
+            The raw dataset, expected to include a column named "target".
+            Whether to generate and display visualizations. Default is True.
+    Returns:
+        int: Status code (0 for success).
+    """
+    ### set up the seaborn ###
+
+    ### Enhanced Feature Summary Table ###
+    show_feature_summary(df)
+
+    ### Visual Data Exploration ###
+    show_visualizations(df)
+
+    ### Statistical Characterization ###
+    show_statistical_characterization(df)
 
     return 0
